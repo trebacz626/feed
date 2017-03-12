@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1>Add Dish dear <%=data.user_id%></h1>
+    <p><%= data.message %></p>
+    <form id="dishForm"action="/addDish" method="post">
+      DishName<br>
+      <input type="text" name="dishName" id="dishName"><br>
+      Ingredients:<br>
+      <input type="text" name="ingredient" class="ingredient"><br>
+      <input type="text" name="ingredient" class="ingredient"><br>
+      <input type="text" name="ingredient" class="ingredient"><br>
+      <input type="text" name="ingredient" class="ingredient"><br>
+      recipe:<br>
+      <textarea name="recipe" cols="40" rows="5" form="dishForm"></textarea><br>
+<input type="submit" value="Submit">
+
+    </form>
+  </body>
+</html>
