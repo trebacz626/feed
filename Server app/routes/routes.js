@@ -99,7 +99,7 @@ module.exports=function(app,googleStuff,connection){
 
 		function checkIngredients(noIngredient,ingredient,index,message,next){
 			if(index<ingredient.length){
-			connection.query("Select ingredient_id FROM ingredients where name = ?",ingredient[index].name,function(err,rows){
+			connection.query("Select ingredient_id FROM ingredients where ingredient_name = ?",ingredient[index].name,function(err,rows){
 				if(!err){
 					if(ingredient[index].name){
 						if(!rows.length){
@@ -130,6 +130,7 @@ module.exports=function(app,googleStuff,connection){
 			}
 			next(string);
 		}
+
 	app.post("/addDish", function (req, res) {
 		var session = req.session;
 		if(session['is_logged']&&session.user_id){
@@ -200,6 +201,79 @@ module.exports=function(app,googleStuff,connection){
 		}
 	});
 
+	app.get("/simplesearch",function(req,res){
+		var data={};
+		data.message="";
+		res.render('simplesearch',{data:data});
+	});
 
-
+	app.post("/simplesearch",function(req,res){
+		/*if(req.body.ingredient){
+			query="SELECT dishes.name,dishes.recipe,ingredients.name FROM dishes INNER JOIN ingredient_to_dish ON dishes.dish_id=ingredient_to_dish.dish_id INNER JOIN ingredients ON ingrediens.ingredient_id=ingredient_to_dish.ingredient_id  WHERE NOT(ingredient<>req.body.ingredient[0])AND NOT (ingredient<>req.body.ingredient[1])";
+		}else{
+			res.render('error',{error:"Select ingredients"});
+		}
+		*/
+		var data={};
+		if(req.body.ingredient){
+			var noIngredient= new Array();
+			var m;
+			var ingredient=new Array();
+			for(var i=0;i<req.body.ingredient.length;i++){
+				var obj={
+					name:req.body.ingredient[i],
+					id:null
+				}
+				ingredient.push(obj);
+			}
+			checkIngredients(noIngredient,ingredient,0,m,function(message){
+				if(message){
+					res.render('error',{error:message});
+				}else{
+					if(noIngredient[0]){
+						data.message="in databse there is no ";
+						mergeString(noIngredient," and ",function(string){
+							data.message+=string;
+						});
+						res.render('simplesearch',{data:data});
+					}else{
+							var query="SELECT dishes.name,dishes.recipe,ingredients.ingredient_name FROM dishes INNER JOIN ingredient_to_dish ON dishes.dish_id=ingredient_to_dish.dish_id INNER JOIN ingredients ON ingredients.ingredient_id=ingredient_to_dish.ingredient_id";
+							/*for(var i=0;i<ingredient.length;i++){
+								if(ingredient[i].id!=null){
+									if(i>0){
+										query+=", ";
+									}
+									query+="("+ingredient[i].id+","+dish_id+")";
+								}
+							}*/
+							connection.query(query,{},function(err,rows){
+								if(err){
+									res.render('error',{error:err});
+								}else{
+									console.log(rows);
+									data.dishes=new Array();
+									for(var i=0;i<rows.length;i++){
+										var dishObj={};
+										dishObj.name=rows[i].name;
+										dishObj.recipe=rows[i].recipe;
+										dishObj.ingredients= new Array();
+										//for(var a=0;a<rows[i].ingredients.length;a++){
+											dishObj.ingredients.push(rows[i].ingredient_name);
+											//console.log("iiiii"+rows[i].ingredient_name);
+											//console.log(dishObj);
+										//}
+										data.dishes.push(dishObj)
+									};
+									console.log(data.dishes[0].ingredients[0]);
+									res.render('searchresult',{data:data});
+							}
+						});
+					}
+				}
+			});
+		}else{
+			data.message="Fill all fields";
+			res.render("simplesearch",{data:data})
+		}
+	});
 }

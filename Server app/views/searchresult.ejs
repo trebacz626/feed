@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1>Dishes:</h1>
+    <% for(var i=0;i<data.dishes.length;i++){ %>
+      <h3>Name:<%=data.dishes[i].name%></h3>
+      <h4>Recipe:</h4>
+      <p><%=data.dishes[i].recipe%></p>
+      <h4>Ingredients:</h4>
+      <% for(var a=0;a<data.dishes[i].ingredients.length;a++){ %>
+        <p><%=data.dishes[i].ingredients[a]%></p>
+      <%};%>
+    <%};%>
+<input type="submit" value="Submit">
+
+    </form>
+  </body>
+</html>
