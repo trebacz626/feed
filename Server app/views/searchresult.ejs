@@ -5,7 +5,7 @@
   </head>
   <body>
     <h1>Dishes:</h1>
-    <% for(var i=0;i<data.dishes.length;i++){ %>
+    <% for(var i=0;i<data.dishes.length;i++){ if(!data.dishes[i].tooMuch){%>
       <h3>Name:<%=data.dishes[i].name%></h3>
       <h4>Recipe:</h4>
       <p><%=data.dishes[i].recipe%></p>
@@ -13,8 +13,7 @@
       <% for(var a=0;a<data.dishes[i].ingredients.length;a++){ %>
         <p><%=data.dishes[i].ingredients[a]%></p>
       <%};%>
-    <%};%>
-<input type="submit" value="Submit">
+    <%}};%>
 
     </form>
   </body>

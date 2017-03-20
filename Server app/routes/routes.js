@@ -1,5 +1,6 @@
 module.exports=function(app,googleStuff,connection){
 
+	var async = require("async");
 	app.get("/", function (req, res) {
 	    var url = googleStuff.getAuthUrl();
 	    res.render("index",{url:url});
@@ -208,23 +209,19 @@ module.exports=function(app,googleStuff,connection){
 	});
 
 	app.post("/simplesearch",function(req,res){
-		/*if(req.body.ingredient){
-			query="SELECT dishes.name,dishes.recipe,ingredients.name FROM dishes INNER JOIN ingredient_to_dish ON dishes.dish_id=ingredient_to_dish.dish_id INNER JOIN ingredients ON ingrediens.ingredient_id=ingredient_to_dish.ingredient_id  WHERE NOT(ingredient<>req.body.ingredient[0])AND NOT (ingredient<>req.body.ingredient[1])";
-		}else{
-			res.render('error',{error:"Select ingredients"});
-		}
-		*/
 		var data={};
 		if(req.body.ingredient){
 			var noIngredient= new Array();
 			var m;
 			var ingredient=new Array();
 			for(var i=0;i<req.body.ingredient.length;i++){
-				var obj={
-					name:req.body.ingredient[i],
-					id:null
+				if(req.body.ingredient[i]){
+					var obj={
+						name:req.body.ingredient[i],
+						id:null
+					}
+					ingredient.push(obj);
 				}
-				ingredient.push(obj);
 			}
 			checkIngredients(noIngredient,ingredient,0,m,function(message){
 				if(message){
@@ -237,35 +234,71 @@ module.exports=function(app,googleStuff,connection){
 						});
 						res.render('simplesearch',{data:data});
 					}else{
-							var query="SELECT dishes.name,dishes.recipe,ingredients.ingredient_name FROM dishes INNER JOIN ingredient_to_dish ON dishes.dish_id=ingredient_to_dish.dish_id INNER JOIN ingredients ON ingredients.ingredient_id=ingredient_to_dish.ingredient_id";
-							/*for(var i=0;i<ingredient.length;i++){
+							var query="SELECT dishes.dish_id,dishes.name,dishes.recipe,ingredients.ingredient_name FROM dishes INNER JOIN ingredient_to_dish ON dishes.dish_id=ingredient_to_dish.dish_id INNER JOIN ingredients ON ingredients.ingredient_id=ingredient_to_dish.ingredient_id where ingredients.ingredient_name in (";
+							for(var i=0;i<ingredient.length;i++){
 								if(ingredient[i].id!=null){
 									if(i>0){
 										query+=", ";
 									}
-									query+="("+ingredient[i].id+","+dish_id+")";
+									query+="'"+ingredient[i].name+"'";
 								}
-							}*/
+							}
+							query+=") group by dishes.dish_id, dishes.name ";
 							connection.query(query,{},function(err,rows){
 								if(err){
 									res.render('error',{error:err});
 								}else{
-									console.log(rows);
 									data.dishes=new Array();
+									var items=new Array();
 									for(var i=0;i<rows.length;i++){
 										var dishObj={};
 										dishObj.name=rows[i].name;
 										dishObj.recipe=rows[i].recipe;
 										dishObj.ingredients= new Array();
 										//for(var a=0;a<rows[i].ingredients.length;a++){
-											dishObj.ingredients.push(rows[i].ingredient_name);
+											//dishObj.ingredients.push(rows[i].ingredient_name);
 											//console.log("iiiii"+rows[i].ingredient_name);
 											//console.log(dishObj);
 										//}
 										data.dishes.push(dishObj)
+										items.push({
+											query:"SELECT ingredients.ingredient_name FROM ingredients INNER JOIN ingredient_to_dish ON ingredients.ingredient_id=ingredient_to_dish.ingredient_id WHERE dish_id="+ rows[i].dish_id,
+											index:i
+										});
 									};
-									console.log(data.dishes[0].ingredients[0]);
-									res.render('searchresult',{data:data});
+
+									async.each(items,function(item,callback){
+										connection.query(item.query,{},function(err,rows){
+											if(err){
+												console.log("error "+ err)
+											}else{
+												for(var i=0;i<rows.length;i++){
+												data.dishes[item.index].ingredients.push(rows[i].ingredient_name);
+											}
+											callback();
+											}
+										});
+									},
+									function(err){
+										for(var i=0;i<data.dishes.length;i++){
+											for(var a=0;a<data.dishes[i].ingredients.length;a++){
+												var was=false;
+												for(var b=0;b<ingredient.length;b++){
+													if(data.dishes[i].ingredients[a]==ingredient[b].name){
+														was=true;
+													}
+												}
+												if(!was){
+													 data.dishes[i].tooMuch=true;//has too much ingredients
+													break;
+												}
+											}
+										}
+										res.render('searchresult',{data:data});
+									});
+
+
+
 							}
 						});
 					}
@@ -276,4 +309,6 @@ module.exports=function(app,googleStuff,connection){
 			res.render("simplesearch",{data:data})
 		}
 	});
+
+
 }
