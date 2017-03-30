@@ -1,6 +1,45 @@
 module.exports=function(app,googleStuff,connection){
 
 	var async = require("async");
+
+	function checkIngredients(noIngredient,ingredient,index,message,next){
+		if(index<ingredient.length){
+		connection.query("Select ingredient_id FROM ingredients where ingredient_name = ?",ingredient[index].name,function(err,rows){
+			if(!err){
+				if(ingredient[index].name){
+					if(!rows.length){
+						noIngredient.push(ingredient[index].name);
+					}else{
+						ingredient[index].id=rows[0]['ingredient_id'];
+					}
+				}
+
+			}else{
+				message=err;
+			}
+			checkIngredients(noIngredient,ingredient,index+1,message,next);
+		});
+	}else{
+				next(message,ingredient);
+		}
+	}
+
+	function mergeString(tableOfData,separator,next){
+		var string='';
+		for(var i=0;i<tableOfData.length;i++){
+			if(tableOfData[i]){
+				string+=tableOfData[i];
+			if(i!=tableOfData.length-1)
+				string+=separator;
+		}
+		}
+		next(string);
+	}
+
+	function loginAndCheckRole(){
+
+	}
+
 	app.get("/", function (req, res) {
 	    var url = googleStuff.getAuthUrl();
 	    res.render("index",{url:url});
@@ -54,6 +93,26 @@ module.exports=function(app,googleStuff,connection){
 	    });
 	});
 
+	app.get("/login",function(req,res)){
+		if(session.id&&req.session["is_logged"]){
+			res.redirect("/profile");
+		}else{
+			res.render("login",{});
+		}
+	};
+	app.post("/login",function(req,res)){
+
+	};
+	app.get("/register",function(req,res)){
+		if(session.id&&req.session["is_logged"]){
+			res.redirect("/profile");
+		}else{
+			res.render("register",{});
+		}
+	};
+	app.post("/register",function(req,res)){
+
+	};
 	app.get("/logout",function(req,res){
 		var session = req.session;
 		session["is_logged"]=false;
@@ -98,39 +157,7 @@ module.exports=function(app,googleStuff,connection){
 		}
 	});
 
-		function checkIngredients(noIngredient,ingredient,index,message,next){
-			if(index<ingredient.length){
-			connection.query("Select ingredient_id FROM ingredients where ingredient_name = ?",ingredient[index].name,function(err,rows){
-				if(!err){
-					if(ingredient[index].name){
-						if(!rows.length){
-							noIngredient.push(ingredient[index].name);
-						}else{
-							ingredient[index].id=rows[0]['ingredient_id'];
-						}
-					}
 
-				}else{
-					message=err;
-				}
-				checkIngredients(noIngredient,ingredient,index+1,message,next);
-			});
-		}else{
-					next(message,ingredient);
-			}
-		}
-
-		function mergeString(tableOfData,separator,next){
-			var string='';
-			for(var i=0;i<tableOfData.length;i++){
-				if(tableOfData[i]){
-					string+=tableOfData[i];
-				if(i!=tableOfData.length-1)
-					string+=separator;
-			}
-			}
-			next(string);
-		}
 
 	app.post("/addDish", function (req, res) {
 		var session = req.session;

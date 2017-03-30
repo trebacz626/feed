@@ -8,11 +8,13 @@
   "dependencies": {
     "async": "^2.1.5",
     "body-parser": "~1.16.0",
+    "connect-busboy": "",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.0",
     "ejs": "~2.5.5",
     "express": "~4.14.1",
     "express-session": "",
+    "formidable": "^1.1.1",
     "googleapis": "",
     "morgan": "~1.7.0",
     "mysql": "",
