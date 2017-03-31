@@ -1,6 +1,11 @@
 module.exports=function(app,googleStuff,connection){
 
 	var async = require("async");
+	var crypto = require('crypto');
+
+	function md5(string) {
+  	return crypto.createHash('md5').update(string).digest('hex');
+	}
 
 	function checkIngredients(noIngredient,ingredient,index,message,next){
 		if(index<ingredient.length){
@@ -36,9 +41,7 @@ module.exports=function(app,googleStuff,connection){
 		next(string);
 	}
 
-	function loginAndCheckRole(){
 
-	}
 
 	app.get("/", function (req, res) {
 	    var url = googleStuff.getAuthUrl();
@@ -67,7 +70,7 @@ module.exports=function(app,googleStuff,connection){
 
 										}else{
 										if(!rows.length){
-											connection.query("INSERT into users(google_name,google_email,google_id,picture)VALUES(?,?,?,?)",[data.displayName,data.emails[0].value,data.id,data.image.url],function(err,result){
+											connection.query("INSERT into users(name,email,google_id,picture)VALUES(?,?,?,?)",[data.displayName,data.emails[0].value,data.id,data.image.url],function(err,result){
 
 												session.user_id=result.insertId;
 											});
@@ -93,26 +96,72 @@ module.exports=function(app,googleStuff,connection){
 	    });
 	});
 
-	app.get("/login",function(req,res)){
-		if(session.id&&req.session["is_logged"]){
+	app.get("/login",function(req,res){
+		if(req.session.user_id&&req.session["is_logged"]){
 			res.redirect("/profile");
 		}else{
 			res.render("login",{});
 		}
-	};
-	app.post("/login",function(req,res)){
+	});
 
-	};
-	app.get("/register",function(req,res)){
-		if(session.id&&req.session["is_logged"]){
+	app.post("/login",function(req,res){
+		var session = req.session;
+		if(session.user_id&&session["is_logged"]){
+			res.redirect("/profile");
+		}else{
+			connection.query("SELECT 	user_id from users WHERE email=? AND password=?",[req.body.mail,md5(req.body.password)],function(err,rows){
+				if(err){
+					session["is_logged"]=false;
+	        res.render('loginFailed',{error:err});
+
+				}else{
+					session["is_logged"]=true;
+					session.user_id=rows[0]['user_id'];;
+					res.redirect("/");
+			}
+		});
+
+
+		}
+	});
+
+	app.get("/register",function(req,res){
+		if(req.session.user_id&&req.session["is_logged"]){
 			res.redirect("/profile");
 		}else{
 			res.render("register",{});
 		}
-	};
-	app.post("/register",function(req,res)){
+	});
 
-	};
+	app.post("/register",function(req,res){
+		var session = req.session;
+		if(req.session.user_id&&req.session["is_logged"]){
+			res.redirect("/profile");
+		}else{
+
+			connection.query("SELECT 	user_id from users WHERE email=?",[req.body.mail],function(err,rows){
+				if(err){
+					session["is_logged"]=false;
+	        res.render('loginFailed',{error:err});
+
+				}else{
+				if(!rows.length){
+					connection.query("INSERT into users(email,password)VALUES(?,?)",[req.body.mail,md5(req.body.password)],function(err,result){
+
+						session.user_id=result.insertId;
+						res.redirect('/profile');
+					});
+				}else{
+					res.render("register",{})
+
+				}
+
+			}
+		});
+
+		}
+	});
+
 	app.get("/logout",function(req,res){
 		var session = req.session;
 		session["is_logged"]=false;
@@ -125,13 +174,13 @@ module.exports=function(app,googleStuff,connection){
 		var data={};
 		var session = req.session;
 		if(session["is_logged"]){
-		connection.query("SELECT google_name,picture from users where user_id=?",session.user_id,function(err,rows){
+		connection.query("SELECT name,picture from users where user_id=?",session.user_id,function(err,rows){
 			if(err){
 				console.log(err);
 				 res.render('error',{error:err});
 			}else{
 				data.userInfo={
-					name:rows[0]['google_name'],
+					name:rows[0]['name'],
 					picture:rows[0]['picture']
 				};
 				res.render('details',{datas:data});
@@ -139,9 +188,7 @@ module.exports=function(app,googleStuff,connection){
 		});
 	 }else{
 		res.redirect("/");
-	}
-	    
-	       
+	}      
 	});
 	 
 	app.get("/addDish", function (req, res) {
