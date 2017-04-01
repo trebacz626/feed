@@ -174,22 +174,22 @@ module.exports=function(app,googleStuff,connection){
 		var data={};
 		var session = req.session;
 		if(session["is_logged"]){
-		connection.query("SELECT name,picture from users where user_id=?",session.user_id,function(err,rows){
+			connection.query("SELECT name,picture from users where user_id=?",session.user_id,function(err,rows){
 			if(err){
 				console.log(err);
-				 res.render('error',{error:err});
+				res.render('error',{error:err});
 			}else{
 				data.userInfo={
 					name:rows[0]['name'],
 					picture:rows[0]['picture']
-				};
+			};
 				res.render('details',{datas:data});
 			}
 		});
 	 }else{
 		res.redirect("/");
 	}      
-	});
+});
 	 
 	app.get("/addDish", function (req, res) {
 		var session = req.session;
@@ -203,8 +203,6 @@ module.exports=function(app,googleStuff,connection){
 			res.render('PleaseLogin',{message:'add a dish'});
 		}
 	});
-
-
 
 	app.post("/addDish", function (req, res) {
 		var session = req.session;
@@ -384,5 +382,54 @@ module.exports=function(app,googleStuff,connection){
 		}
 	});
 
+	app.get("/addfridge",function(req,res){
+		var session = req.session;
+		if(session['is_logged']&&session.user_id){
+
+			var data={
+				user_id:session.user_id,
+				message:''
+			}
+			res.render("addfridge",{data:data})
+		}else{
+			res.render('PleaseLogin',{message:'to add a fridge'});
+		}
+	});
+
+	app.post("/addfridge",function(req,res){
+		var session = req.session;
+		if(session['is_logged']&&session.user_id){
+			connection.query("INSERT INTO fridges(name)VALUES(?)",[req.body.fridgename],function(err,result){
+				if(err){
+					res.render("error",{error:err});
+				}else{
+					connection.query("INSERT INTO fridge_to_user(fridge_id,user_id) VALUES (?,?)",[result.insertId,session.user_id],function(err,result2){
+						if(err){
+							res.render("error",{error:err});
+						}else{
+							var data={
+								user_id:session.user_id,
+								message:'user '+session.user_id+' added succesfully fridge named '+ result.insertId
+							}
+							res.render("addfridge",{data:data})
+						}
+					});
+				}
+			});
+
+
+
+		}else{
+			res.render('PleaseLogin',{message:'to add a fridge'});
+		}
+	});
+
+	app.get("/showfridge",function(req,res){
+
+	});
+
+	app.post("/addIngredienttofridge",function(req,res){
+
+	});
 
 }

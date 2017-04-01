@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1>Add fridge dear <%=data.user_id%></h1>
+    <p><%= data.message %></p>
+    <form id="fridgeForm"action="/addfridge" method="post">
+      Fridge name<br>
+      <input type="text" name="fridgename"><br>
+      Ingredients:<br>
+      <input type="text" name="ingredient" class="ingredient"><br>
+      <input type="text" name="ingredient" class="ingredient"><br>
+      <input type="text" name="ingredient" class="ingredient"><br>
+      <input type="text" name="ingredient" class="ingredient"><br>
+<input type="submit" value="Submit">
+
+    </form>
+  </body>
+</html>
