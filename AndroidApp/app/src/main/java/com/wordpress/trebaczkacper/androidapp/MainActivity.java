@@ -1,5 +1,6 @@
 package com.wordpress.trebaczkacper.androidapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -88,7 +89,8 @@ public class MainActivity extends AppCompatActivity
         Log.d("CREATOR","nav");
         if (id == R.id.nav_log) {
             Log.d("CREATOR","login click");
-            vf.setDisplayedChild(1);
+            Intent intent = new Intent(this,LoginActivity.class);
+            startActivity(intent);
         }else if (id == R.id.nav_log) {
             vf.setDisplayedChild(2);
         } else if (id == R.id.nav_profile) {
