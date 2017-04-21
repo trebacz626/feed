@@ -3,6 +3,8 @@ module.exports=function(app,googleStuff,connection){
 	var async = require("async");
 	var crypto = require('crypto');
 
+
+
 	function md5(string) {
   	return crypto.createHash('md5').update(string).digest('hex');
 	}
@@ -40,7 +42,6 @@ module.exports=function(app,googleStuff,connection){
 		}
 		next(string);
 	}
-
 
 
 	app.get("/", function (req, res) {
@@ -109,7 +110,7 @@ module.exports=function(app,googleStuff,connection){
 		if(session.user_id&&session["is_logged"]){
 			res.redirect("/profile");
 		}else{
-			connection.query("SELECT 	user_id from users WHERE email=? AND password=?",[req.body.mail,md5(req.body.password)],function(err,rows){
+			connection.query("SELECT 	user_id,email from users WHERE email=? AND password=?",[req.body.mail,md5(req.body.password)],function(err,rows){
 				if(err){
 					session["is_logged"]=false;
 	        res.render('loginFailed',{error:err});
@@ -117,7 +118,13 @@ module.exports=function(app,googleStuff,connection){
 				}else{
 					session["is_logged"]=true;
 					session.user_id=rows[0]['user_id'];;
-					res.redirect("/");
+					var data={
+						user:{
+							email:rows[0]['email'],
+							password:req.body.password
+						}
+					};
+					res.json(data);
 			}
 		});
 

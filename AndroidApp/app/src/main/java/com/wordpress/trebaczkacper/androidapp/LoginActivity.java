@@ -1,5 +1,8 @@
 package com.wordpress.trebaczkacper.androidapp;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -8,6 +11,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,7 +34,9 @@ import java.util.Iterator;
 
 public class LoginActivity extends AppCompatActivity {
     private TextView message;
-    private EditText name;
+    private EditText email;
+    private EditText password;
+    private Button loginButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,7 +44,9 @@ public class LoginActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         message = (TextView) findViewById(R.id.message);
-        name = (EditText) findViewById(R.id.name);
+        email = (EditText) findViewById(R.id.email);
+        password = (EditText) findViewById(R.id.password);
+        loginButton = (Button) findViewById(R.id.loginButton);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -48,16 +56,24 @@ public class LoginActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-        name.setOnClickListener(new View.OnClickListener(){
+        loginButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
 
 
-                new SendPostRequest().execute(name.getText().toString());
+                new SendPostRequest().execute(email.getText().toString(),password.getText().toString());
 
             }
         });
+
+
+
     }
+
+    public Activity getActivity() {
+        return this;
+    }
+
     public class SendPostRequest extends AsyncTask<String, Void, String> {
 
         protected void onPreExecute(){}
@@ -65,9 +81,11 @@ public class LoginActivity extends AppCompatActivity {
         protected String doInBackground(String... params) {
 
             try {
-                URL url = new URL("https://testy-trebacz626.c9users.io/connect");
+                //URL url = new URL("https://testy-trebacz626.c9users.io/connect");
+                URL url = new URL("http://10.0.2.2:8080/login");
                 JSONObject postData = new JSONObject();
-                postData.put("userName", params[0] );
+                postData.put("mail", params[0] );
+                postData.put("password", params[1] );
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setReadTimeout(15000);
                 conn.setConnectTimeout(15000 /*  */);
@@ -113,13 +131,27 @@ public class LoginActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             try {
                 JSONObject json = new JSONObject(result);
-                message.setText(json.getString("message"));
-            }catch(Exception e){
+                message.setText(json.toString());
 
+                SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString("email", json.getJSONObject("user").getString("email"));
+                editor.putString("password", json.getJSONObject("user").getString("password"));
+                editor.commit();
+                String defaultValue = "error";
+                String email = sharedPref.getString("email", defaultValue);
+                String password = sharedPref.getString("password", defaultValue);
+
+                Toast.makeText(getApplicationContext(), "Logged as "+ email+" with pasword: "+password,
+                        Toast.LENGTH_LONG).show();
+            }catch(Exception e){
+                Toast.makeText(getApplicationContext(), result,
+                        Toast.LENGTH_LONG).show();
             }
 
             Toast.makeText(getApplicationContext(), result,
                     Toast.LENGTH_LONG).show();
+
         }
 
         public String getPostDataString(JSONObject params) throws Exception{
