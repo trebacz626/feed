@@ -34,9 +34,12 @@ import java.util.Iterator;
 
 public class LoginActivity extends AppCompatActivity {
     private TextView message;
-    private EditText email;
+    private EditText emailText;
     private EditText password;
     private Button loginButton;
+
+    private DBHandler dbHandler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,7 +47,7 @@ public class LoginActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         message = (TextView) findViewById(R.id.message);
-        email = (EditText) findViewById(R.id.email);
+        emailText = (EditText) findViewById(R.id.email);
         password = (EditText) findViewById(R.id.password);
         loginButton = (Button) findViewById(R.id.loginButton);
 
@@ -63,13 +66,13 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View view) {
 
 
-                new SendPostRequest().execute(email.getText().toString(),password.getText().toString());
+                new SendPostRequest().execute(emailText.getText().toString(),password.getText().toString());
 
             }
         });
 
 
-
+        dbHandler = new DBHandler(this,null,null,1);
     }
 
     public Activity getActivity() {
@@ -135,17 +138,22 @@ public class LoginActivity extends AppCompatActivity {
                 JSONObject json = new JSONObject(result);
                 message.setText(json.toString());
 
-                SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putString("email", json.getJSONObject("user").getString("email"));
-                editor.putString("password", json.getJSONObject("user").getString("password"));
-                editor.commit();
-                String defaultValue = "error";
-                String email = sharedPref.getString("email", defaultValue);
-                String password = sharedPref.getString("password", defaultValue);
+               // SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+                //SharedPreferences.Editor editor = sharedPref.edit();
+                //editor.putString("email", json.getJSONObject("user").getString("email"));
+               // editor.putString("password", json.getJSONObject("user").getString("password"));
+                //editor.commit();
+                //String defaultValue = "error";
+               // String email = sharedPref.getString("email", defaultValue);
+               //String password = sharedPref.getString("password", defaultValue);
+                User user = new User();
+                user.setName(json.getJSONObject("user").getString("email"));
+                user.setPassword(json.getJSONObject("user").getString("password"));
+                dbHandler.addUser(user);
+                User user2 = dbHandler.getUser();
 
-                Toast.makeText(getApplicationContext(), "Logged as "+ email+" with pasword: "+password,
-                        Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Logged as "+ email+" with pasword: "+password,Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Logged as "+ user2.getName()+" with pasword: "+user2.getPassword(),Toast.LENGTH_LONG).show();
             }catch(Exception e){
                 Toast.makeText(getApplicationContext(), result,
                         Toast.LENGTH_LONG).show();
