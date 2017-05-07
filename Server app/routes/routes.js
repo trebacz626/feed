@@ -154,9 +154,12 @@ module.exports=function(app,googleStuff,connection){
 				}else{
 				if(!rows.length){
 					connection.query("INSERT into users(email,password)VALUES(?,?)",[req.body.mail,md5(req.body.password)],function(err,result){
-
+							if(err){
+								res.render('error',{error:err});
+							}else{
 						session.user_id=result.insertId;
 						res.redirect('/profile');
+						}
 					});
 				}else{
 					res.render("register",{})
