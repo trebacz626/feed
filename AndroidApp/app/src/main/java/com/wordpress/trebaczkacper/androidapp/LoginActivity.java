@@ -10,6 +10,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -31,9 +32,11 @@ import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
-public class LoginActivity extends AppCompatActivity implements Callback {
+public class LoginActivity extends AppCompatActivity  {
     private TextView message;
     private EditText emailText;
     private EditText password;
@@ -67,7 +70,17 @@ public class LoginActivity extends AppCompatActivity implements Callback {
             public void onClick(View view) {
 
 
-                new SendPostRequest().execute(emailText.getText().toString(),password.getText().toString());
+               SendPostRequest sPR = new SendPostRequest(new Callback(){
+                   @Override
+                   public void callback(Object json){
+                       onJSONData((JSONObject)json);
+                   }
+               });
+                ArrayList<String[]> list= new ArrayList<String[]>();
+                list.add(new String[]{"URL","http://10.0.2.2:8080/login"});
+                list.add(new String[]{"mail",emailText.getText().toString()});
+                list.add(new String[]{"password",password.getText().toString()});
+                sPR.execute(list);
 
             }
         });
@@ -80,6 +93,8 @@ public class LoginActivity extends AppCompatActivity implements Callback {
         return this;
     }
 
+
+    /*
     public class SendPostRequest extends AsyncTask<String, Void, String> {
 
         protected void onPreExecute(){}
@@ -94,7 +109,7 @@ public class LoginActivity extends AppCompatActivity implements Callback {
                 postData.put("password", params[1] );
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setReadTimeout(15000);
-                conn.setConnectTimeout(15000 /*  */);
+                conn.setConnectTimeout(15000 /*  );
                 conn.setRequestMethod("POST");
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
@@ -187,7 +202,10 @@ public class LoginActivity extends AppCompatActivity implements Callback {
 
 
 }
-    public void callback(JSONObject json){
+
+
+*/
+    public void onJSONData(JSONObject json){
         if(json!=null){
             message.setText(json.toString());
 

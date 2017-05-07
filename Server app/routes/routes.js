@@ -124,6 +124,7 @@ module.exports=function(app,googleStuff,connection){
 							password:req.body.password
 						}
 					};
+					console.log(data);
 					res.json(data);
 			}
 		});

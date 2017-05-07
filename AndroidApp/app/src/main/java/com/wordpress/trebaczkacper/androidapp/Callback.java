@@ -8,5 +8,5 @@ import org.json.JSONObject;
 
 public interface Callback {
 
-     public void callback(JSONObject json);
+     public void callback(Object json);
 }

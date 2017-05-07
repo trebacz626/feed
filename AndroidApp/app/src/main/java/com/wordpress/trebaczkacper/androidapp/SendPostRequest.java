@@ -1,6 +1,7 @@
 package com.wordpress.trebaczkacper.androidapp;
 
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -11,16 +12,19 @@ import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by treba on 07.05.2017.
  */
 
-public class SendPostRequest extends AsyncTask<String,Void,String> {
+public class SendPostRequest extends AsyncTask<ArrayList<String[]>,Void,String> {
 
     Callback callback;
     public SendPostRequest(Callback callback) {
@@ -28,13 +32,21 @@ public class SendPostRequest extends AsyncTask<String,Void,String> {
     }
 
     @Override
-    protected String doInBackground(String... params) {
+    protected String doInBackground( ArrayList<String[]> ...Arrayoflist) {
         try {
             //URL url = new URL("https://testy-trebacz626.c9users.io/connect");
-            URL url = new URL("http://10.0.2.2:8080/login");
+
+
+            List<String[]> list = Arrayoflist[0];
+            URL url = new URL(list.get(0)[1]);
             JSONObject postData = new JSONObject();
-            postData.put("mail", params[0] );
-            postData.put("password", params[1] );
+            for(int i =1;i<list.size();i++){
+                postData.put(list.get(i)[0],list.get(i)[1]);
+
+            }
+
+            //postData.put("mail", params[1] );
+            //postData.put("password", params[1] );
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setReadTimeout(15000);
             conn.setConnectTimeout(15000 /*  */);
@@ -77,6 +89,7 @@ public class SendPostRequest extends AsyncTask<String,Void,String> {
 
     @Override
     protected void onPostExecute(String result) {
+
         try {
             JSONObject json = new JSONObject(result);
             callback.callback(json);
