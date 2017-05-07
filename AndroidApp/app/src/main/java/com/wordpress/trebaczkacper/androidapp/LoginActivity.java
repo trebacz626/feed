@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedOutputStream;
@@ -32,7 +33,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Iterator;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements Callback {
     private TextView message;
     private EditText emailText;
     private EditText password;
@@ -183,6 +184,31 @@ public class LoginActivity extends AppCompatActivity {
             }
             return result.toString();
         }
+
+
 }
+    public void callback(JSONObject json){
+        if(json!=null){
+            message.setText(json.toString());
+
+            User user = new User();
+            try {
+                user.setName(json.getJSONObject("user").getString("email"));
+                user.setPassword(json.getJSONObject("user").getString("password"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            dbHandler.addUser(user);
+            User user2 = dbHandler.getUser();
+
+            //Toast.makeText(getApplicationContext(), "Logged as "+ email+" with pasword: "+password,Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Logged as "+ user2.getName()+" with pasword: "+user2.getPassword(),Toast.LENGTH_LONG).show();
+
+        }else{
+            Toast.makeText(getApplicationContext(), "POST FAILED",
+                    Toast.LENGTH_LONG).show();
+        }
+    }
 
 }
