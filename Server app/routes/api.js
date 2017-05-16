@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var loginActivity = require('../Model/Activity/LoginActivityModel');
 var addIngredientActivity = require('../Model/Activity/AddIngredientActivityModel');
+varr addDishActivity = require('../Model/Activity/AddDishActivityModel');
 
 var crypto = require('crypto');
 
@@ -83,7 +84,27 @@ router.route('/addDish')
     next();
   })
   .post(function(req,res,next){
-    next();
+    var data={
+			userInfo:{
+				id:null,
+				email:req.body.mail,
+				password:req.body.password,
+			},
+			curactivityData:{
+				dish:{
+					name:req.body.dishName,
+					ingredients:reg.body.ingredients,
+					recipe:req.body.recipe
+				}
+			}
+		}
+		addDishActivity(data,function(err,message){
+			var response={
+				userInfo:data.userInfo,
+				message: message
+			}
+			res.json(response);
+		});
   });
 
 router.route('/simplesearch')
@@ -91,7 +112,7 @@ router.route('/simplesearch')
     next();
   })
   .post(function(req,res,next){
-    next();
+
   });
 
 router.route('/addfridge')
