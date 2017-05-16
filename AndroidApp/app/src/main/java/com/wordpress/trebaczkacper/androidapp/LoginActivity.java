@@ -2,6 +2,7 @@ package com.wordpress.trebaczkacper.androidapp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -77,7 +78,7 @@ public class LoginActivity extends AppCompatActivity  {
                    }
                });
                 ArrayList<String[]> list= new ArrayList<String[]>();
-                list.add(new String[]{"URL","http://10.0.2.2:8080/login"});
+                list.add(new String[]{"URL","http://10.0.2.2:8080/api/login"});
                 list.add(new String[]{"mail",emailText.getText().toString()});
                 list.add(new String[]{"password",password.getText().toString()});
                 sPR.execute(list);
@@ -210,18 +211,28 @@ public class LoginActivity extends AppCompatActivity  {
             message.setText(json.toString());
 
             User user = new User();
+            Log.d("d","one");
             try {
-                user.setName(json.getJSONObject("user").getString("email"));
-                user.setPassword(json.getJSONObject("user").getString("password"));
+                user.setName(json.getJSONObject("userInfo").getString("email"));
+                user.setPassword(json.getJSONObject("userInfo").getString("password"));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
+            try {
+                dbHandler.deleteUser(user.getName());
+            }catch(Exception e){
+                Log.d("D",e.getMessage());
+            }
             dbHandler.addUser(user);
             User user2 = dbHandler.getUser();
 
             //Toast.makeText(getApplicationContext(), "Logged as "+ email+" with pasword: "+password,Toast.LENGTH_LONG).show();
             Toast.makeText(getApplicationContext(), "Logged as "+ user2.getName()+" with pasword: "+user2.getPassword(),Toast.LENGTH_LONG).show();
+            Intent resultIntent = new Intent();
+            resultIntent.putExtra("email", user2.getName());
+            resultIntent.putExtra("password", user2.getPassword());
+            setResult(Activity.RESULT_OK, resultIntent);
+            finish();
 
         }else{
             Toast.makeText(getApplicationContext(), "POST FAILED",

@@ -1,5 +1,7 @@
 package com.wordpress.trebaczkacper.androidapp;
 
+import android.app.Activity;
+import android.app.Instrumentation;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,6 +20,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.ViewFlipper;
 
 import java.io.IOException;
@@ -29,6 +32,13 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private ViewFlipper vf;
+    private NavigationView navView;
+    private View navHeaderView;
+
+    private TextView emailTextView;
+
+    private DBHandler dbHandler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d("CREATOR","creating");
@@ -57,6 +67,14 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         vf=(ViewFlipper) findViewById(R.id.vf);
+        navView = (NavigationView) findViewById(R.id.nav_view);
+        navHeaderView= navView.getHeaderView(0);
+        emailTextView = (TextView) navHeaderView.findViewById(R.id.UserEmail);
+        try {
+            emailTextView.setText(dbHandler.getUser().getName());
+        }catch(Exception e){
+
+        }
 
     }
 
@@ -101,7 +119,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_log) {
             Log.d("CREATOR","login click");
             Intent intent = new Intent(this,LoginActivity.class);
-            startActivity(intent);
+            startActivityForResult(intent,1);
         } else if (id == R.id.nav_profile) {
             vf.setDisplayedChild(1);
         }else if (id == R.id.nav_search) {
@@ -113,6 +131,20 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode,int resultCode,Intent data){
+        super.onActivityResult(requestCode,resultCode, data);
+        switch(requestCode) {
+            case 1: {
+                if (resultCode == Activity.RESULT_OK) {
+                    String email = data.getStringExtra("email");
+                    emailTextView.setText(email);
+
+                }
+            }
+        }
     }
 
 

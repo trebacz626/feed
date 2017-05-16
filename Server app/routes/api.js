@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var loginActivity = require('../Model/Activity/LoginActivityModel');
+var addIngredientActivity = require('../Model/Activity/AddIngredientActivityModel');
 
 var crypto = require('crypto');
 
@@ -25,14 +26,24 @@ router.route('/login')
 	      email:req.body.mail,
 	      password:md5(req.body.password),
 	    },
-	    curactivityData:{
+	    activityData:{
 
 	    }
 	  }
-    loginActivity(data,function(err,id){
-      console.log(err+' id '+id);
+    loginActivity(data,function(err,user){
+      console.log(err+' id '+user);
+			var response={
+				error:err,
+				userInfo:{
+		      id:user.data.id,
+		      email:user.data.email,
+		      password:req.body.password,
+		    }
+
+			}
+			res.json(response);
     });
-		res.send("logg");
+
   });
 
 router.route('/register')
@@ -91,12 +102,30 @@ router.route('/addfridge')
     next();
   });
 
-router.route('/addDish')
+router.route('/addingredient')
   .get(function(req,res,next){
     next();
   })
   .post(function(req,res,next){
-    next();
+		var data={
+	    userInfo:{
+	      id:null,
+	      email:req.body.mail,
+	      password:md5(req.body.password),
+	    },
+	    activityData:{
+				ingredient:{
+					id:null,
+					name:req.body.ingredient_name
+				}
+	    }
+	  }
+		addIngredientActivity(data,function(err,message){
+		  if(err){
+		    message="there was an error";
+		  }
+		    res.json(message);
+		});
   });
 
 router.route('/addDish')

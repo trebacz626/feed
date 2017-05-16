@@ -45,7 +45,7 @@ User.checkIfExist = function (email,callback) {
     }
   });
 }
-User.createNew = function(email,password,callback){
+User.prototype.save = function(email,password,callback){
   connection.query("INSERT into users(email,password)VALUES(?,?)",[email,password],function(err,result){
     if(err){
       callback(err);
@@ -55,20 +55,23 @@ User.createNew = function(email,password,callback){
   });
 }
 
-User.prototype.login=function(email,password,callback){
-  console.log("what"+this.data.id);
+User.prototype.login=function(callback){
+  var user =this;
   if(!this.data.id){
-    connection.query("SELECT 	user_id from users WHERE email=? AND password=?",[email,password],function(err,rows){
+    connection.query("SELECT 	user_id from users WHERE email=? AND password=?",[user.data.email,user.data.password],function(err,rows){
       if(err){
         callback(err);
       }else{
         if(rows.length){
-          callback(null,rows[0]['user_id']);
+          user.data.id=rows[0]['user_id'];
+          callback(null,true);
         }else{
-          callback("no user with this email and password",rows[0]['user_id']);
+
+          callback(null,false);
         }
       }
     });
   }
+
 }
 module.exports= User;

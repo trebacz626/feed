@@ -11,7 +11,7 @@ import android.content.Context;
 import android.content.ContentValues;
 
 public class DBHandler extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     private static final String DATABASE_NAME = "simple-cooking.db";
     public static final String TABLE_USERS = "users";
     public static final String COLUMN_ID = "id";
@@ -56,11 +56,13 @@ public class DBHandler extends SQLiteOpenHelper {
     }
 
     public User getUser(){
+
         SQLiteDatabase db = getWritableDatabase();
         String query = "SELECT * FROM "+ TABLE_USERS+ " WHERE 1";
         Cursor c = db.rawQuery(query,null);
 
         c.moveToFirst();
+
         User user = new User(c.getColumnIndex("id"),c.getString(c.getColumnIndex("name")),c.getString(c.getColumnIndex("password")));
         return user;
     }
