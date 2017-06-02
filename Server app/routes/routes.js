@@ -317,7 +317,7 @@ module.exports=function(app,googleStuff,connection){
 						});
 						res.render('simplesearch',{data:data});
 					}else{
-							var query="SELECT dishes.dish_id,dishes.name,dishes.recipe,ingredients.ingredient_name FROM dishes INNER JOIN ingredient_to_dish ON dishes.dish_id=ingredient_to_dish.dish_id INNER JOIN ingredients ON ingredients.ingredient_id=ingredient_to_dish.ingredient_id where ingredients.ingredient_name in (";
+							var query="SELECT dishes.dish_id,dishes.name,dishes.recipe,ingredients.ingredient_name FROM dishes INNER JOIN ingredient_to_dish ON dishes.dish_id=ingredient_to_dish.dish_id INNER JOIN ingredients ON ingredients.ingredient_id=ingredient_to_dish.ingredient_id WHERE ingredients.ingredient_name in (";
 							for(var i=0;i<ingredient.length;i++){
 								if(ingredient[i].id!=null){
 									if(i>0){
@@ -365,10 +365,13 @@ module.exports=function(app,googleStuff,connection){
 									function(err){
 										for(var i=0;i<data.dishes.length;i++){
 											for(var a=0;a<data.dishes[i].ingredients.length;a++){
+												console.log("CHECKINGGGGG");
 												var was=false;
-												for(var b=0;b<ingredient.length;b++){
-													if(data.dishes[i].ingredients[a]==ingredient[b].name){
+												for(var b=0;b<ingredients.length;b++){
+													if(data.dishes[i].ingredients[a].data.name==ingredients[b].data.name){
 														was=true;
+														console.log(data.dishes[i].ingredients[a].data.name);
+														console.log(ingredients[b].data.name);
 													}
 												}
 												if(!was){

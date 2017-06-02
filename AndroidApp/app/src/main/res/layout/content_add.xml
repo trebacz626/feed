@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/addDish"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="45dp"
+        android:text="Add Dish"
+        android:textAlignment="center"
+        android:textSize="35sp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:id="@+id/dishName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/addDish"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="24dp"
+        android:ems="10"
+        android:hint="Dish Name"
+        android:inputType="textPersonName"
+        android:textAlignment="center" />
+
+    <EditText
+        android:id="@+id/ingredient1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Ingredient1"
+        android:inputType="textPersonName"
+        android:textAlignment="center"
+        android:layout_marginTop="17dp"
+        android:layout_below="@+id/dishName"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <EditText
+        android:id="@+id/ingredient2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/ingredient1"
+        android:layout_alignStart="@+id/ingredient1"
+        android:layout_below="@+id/ingredient1"
+        android:layout_marginTop="42dp"
+        android:ems="10"
+        android:hint="ingredient2"
+        android:inputType="textPersonName"
+        android:textAlignment="center" />
+
+    <EditText
+        android:id="@+id/recipe"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/ingredient2"
+        android:layout_alignStart="@+id/ingredient2"
+        android:layout_below="@+id/ingredient2"
+        android:layout_marginTop="50dp"
+        android:ems="10"
+        android:hint="Recipe"
+        android:inputType="textMultiLine"
+        android:selectAllOnFocus="false"
+        android:singleLine="false"
+        android:textAlignment="center" />
+
+    <Button
+        android:id="@+id/addDishButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add Dish"
+        android:textSize="30sp"
+        android:layout_below="@+id/recipe"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="53dp" />
+
+</RelativeLayout>

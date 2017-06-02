@@ -59,15 +59,15 @@ User.prototype.login=function(callback){
   var user =this;
   if(!this.data.id){
     connection.query("SELECT 	user_id from users WHERE email=? AND password=?",[user.data.email,user.data.password],function(err,rows){
+
       if(err){
         callback(err);
       }else{
         if(rows.length){
           user.data.id=rows[0]['user_id'];
-          callback(null,true);
+          callback(err,1);
         }else{
-
-          callback(null,false);
+          callback(err,0);
         }
       }
     });

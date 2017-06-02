@@ -56,7 +56,7 @@ public class SendPostRequest extends AsyncTask<ArrayList<String[]>,Void,String> 
 
             OutputStream os = conn.getOutputStream();
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"UTF-8"));
-            writer.write(getPostDataString(postData));
+            writer.write(getPostDataString2(list));
             writer.flush();
             writer.close();
             os.close();
@@ -116,6 +116,30 @@ public class SendPostRequest extends AsyncTask<ArrayList<String[]>,Void,String> 
             result.append("=");
             result.append(URLEncoder.encode(value.toString(),"UTF-8"));
         }
+        Log.d("T",result.toString());
+        return result.toString();
+    }
+
+
+    public String getPostDataString2(List<String[]> list) throws Exception{
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+        int i=0;
+        while(i<list.size()){
+            String key= list.get(i)[0];
+            Object value= list.get(i)[1];
+
+            if(first){
+                first=false;
+            }else{
+                result.append("&");
+            }
+            result.append(URLEncoder.encode(key,"UTF-8"));
+            result.append("=");
+            result.append(URLEncoder.encode(value.toString(),"UTF-8"));
+            i++;
+        }
+        Log.d("T",result.toString());
         return result.toString();
     }
 }

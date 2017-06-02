@@ -4,8 +4,8 @@ var async = require('async');
 function mergeString(tableOfData,separator,next){
   var string='';
   for(var i=0;i<tableOfData.length;i++){
-    if(tableOfData[i]){
-      string+=tableOfData[i];
+    if(tableOfData[i].data.name){
+      string+=tableOfData[i].data.name;
     if(i!=tableOfData.length-1)
       string+=separator;
   }
@@ -33,9 +33,10 @@ Ingredient.getById = function (id,callback) {
 });
 };
 
-Ingredient.checkIngredients(ingredients,callback){
-  var noingredient = new Array();
-  async.forEach(Ingredients,function(ingredient,next){
+Ingredient.checkIngredients= function(ingredients,callback){
+  var noIngredient = new Array();
+  async.forEach(ingredients,function(ingredient,next){
+    //console.log("namei"+ingredient.data);
     ingredient.checkIfExist(function(err,exists){
       if(err){
         next(err);

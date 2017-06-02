@@ -46,6 +46,11 @@
             layout="@layout/content_search"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+
+        <include
+            layout="@layout/content_add"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
     </ViewFlipper>
 
 </android.support.design.widget.CoordinatorLayout>
