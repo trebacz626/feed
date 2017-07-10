@@ -17,7 +17,7 @@ public class DBHandler extends SQLiteOpenHelper {
     public static final String COLUMN_ID = "id";
     public static final String COLUMN_NAME ="name";
     public static final String COLUMN_PASSWORD ="password";
-    //public static final String COLUMN_TOKEN ="token";
+    public static final String COLUMN_TOKEN ="token";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, DATABASE_NAME, factory, DATABASE_VERSION);
@@ -42,8 +42,7 @@ public class DBHandler extends SQLiteOpenHelper {
     public void addUser(User user){
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME,user.getName());
-        values.put(COLUMN_PASSWORD,user.getPassword());
-        //values.put(COLUMN_TOKEN,user.getToken());
+        values.put(COLUMN_TOKEN,user.getToken());
         SQLiteDatabase db = getWritableDatabase();
         db.insert(TABLE_USERS,null,values);
         db.close();

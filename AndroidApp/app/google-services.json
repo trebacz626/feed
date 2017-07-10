@@ -1,0 +1,64 @@
+{
+  "project_info": {
+    "project_number": "878826402052",
+    "project_id": "simple-cooking"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:878826402052:android:6ebb23810b7a750c",
+        "android_client_info": {
+          "package_name": "com.wordpress.trebaczkacper.androidapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "878826402052-5ibtc8cularrgpb0vh407k08bbh6vdtv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wordpress.trebaczkacper.androidapp",
+            "certificate_hash": "d6d096c37dbda0cb229d0897da619eb884e6c5d5"
+          }
+        },
+        {
+          "client_id": "878826402052-vuv9orc3m91ujqb572c3gls5hkdjg6rk.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "878826402052-dsgttuf7vrqjqob4lkqhdlbisjmi8fq9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wordpress.trebaczkacper.androidapp",
+            "certificate_hash": "a91c509bf6ce68d1dbc1632367c5a97cd6f18032"
+          }
+        },
+        {
+          "client_id": "878826402052-9c2bdrb4hijah7hu6kldmfh90md6ebtp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wordpress.trebaczkacper.androidapp",
+            "certificate_hash": "5c817e8b3cda5bc8334fdfe54b068c06766bda35"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtevHk2ofUqpVldaQtr4T1UOy1AhyHWmQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

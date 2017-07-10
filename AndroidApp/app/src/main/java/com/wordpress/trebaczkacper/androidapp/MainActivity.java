@@ -113,7 +113,8 @@ public class MainActivity extends AppCompatActivity
                 User user = dbHandler.getUser();
 
                 list.add(new String[]{"mail",user.getName()});
-                list.add(new String[]{"password",user.getPassword()});
+                //----------------------------------------\\\\\\\\\\\\\\\\\\ Repair other routes on serwer
+                //list.add(new String[]{"password",user.getPassword()});
                 list.add(new String[]{"dishName",dishNameEditText.getText().toString()});
                 list.add(new String[]{"ingredient",ingredient1EditText.getText().toString()});
                 list.add(new String[]{"ingredient",ingredient2EditText.getText().toString()});
@@ -165,8 +166,11 @@ public class MainActivity extends AppCompatActivity
         Log.d("CREATOR","nav");
         if (id == R.id.nav_log) {
             Log.d("CREATOR","login click");
-            Intent intent = new Intent(this,LoginActivity.class);
-            startActivityForResult(intent,1);
+            //Intent intent = new Intent(this,LoginActivity.class);
+            //startActivityForResult(intent,1);
+
+            Intent intent = new Intent(this,GoogleLoginActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_profile) {
             vf.setDisplayedChild(1);
         }else if (id == R.id.nav_search) {
