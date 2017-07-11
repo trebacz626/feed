@@ -4,6 +4,7 @@ var loginActivity = require('../Model/Activity/LoginActivityModel');
 var addIngredientActivity = require('../Model/Activity/AddIngredientActivityModel');
 var addDishActivity = require('../Model/Activity/AddDishActivityModel');
 var simpleSearchActivity = require('../Model/Activity/SimpleSearchActivityModel');
+var loginGoogleActivityModel = require('../Model/Activity/LoginGoogleActivityModel');
 var Ingredient = require('../Model/Helpers/IngredientModel');
 var crypto = require('crypto');
 
@@ -16,7 +17,7 @@ router.get('/',function(req,res,next){
 	res.send("This is API");
 });
 
-router.route('/login')
+router.route('/login/local')
   .get(function(req,res,next){
 
     next();
@@ -61,8 +62,37 @@ router.route('/auth/google/callback')
     next();
   })
   .post(function(req,res,next){
-    next();
+
   });
+
+	router.route('/login/google')
+	  .get(function(req,res,next){
+			var data={
+		    userInfo:{
+		      id:null,
+		      code:req.query.code,
+		    },
+		    activityData:{
+
+		    }
+		  }
+			loginGoogleActivityModel(data,function(err,correct){
+				var response={
+					error:err,
+					userInfo:{
+			      id:user.data.id,
+			      //email:user.data.email,
+			      token:user.data.token
+			    }
+
+				}
+				res.json(response);
+
+			})
+	  })
+	  .post(function(req,res,next){
+	    next();
+	  });
 
 router.route('/logout')
   .get(function(req,res,next){

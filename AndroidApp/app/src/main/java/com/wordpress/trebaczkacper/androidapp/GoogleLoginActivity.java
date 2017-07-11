@@ -91,7 +91,7 @@ public class GoogleLoginActivity extends AppCompatActivity implements GoogleApiC
         setContentView(R.layout.activity_google_login);
         // Set up the login form.
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().requestScopes(new Scope((Scopes.PLUS_LOGIN)),new Scope((Scopes.PLUS_ME)))
-         .requestIdToken("878826402052-vuv9orc3m91ujqb572c3gls5hkdjg6rk.apps.googleusercontent.com")
+         .requestIdToken("878826402052-vuv9orc3m91ujqb572c3gls5hkdjg6rk.apps.googleusercontent.com").requestServerAuthCode("878826402052-vuv9orc3m91ujqb572c3gls5hkdjg6rk.apps.googleusercontent.com",false)
          .build();
 
 
@@ -197,7 +197,8 @@ public class GoogleLoginActivity extends AppCompatActivity implements GoogleApiC
          GoogleSignInAccount acct = result.getSignInAccount();
          String idToken = acct.getIdToken();
          mStatusTextView.setText("Toke: "+ idToken);
-         Log.d("D","Token: "+ idToken);
+         Log.d("D","Tokenn: "+ idToken);
+         Log.d("D","Token: "+ acct.getServerAuthCode());
          /*SendPostRequest sPR = new SendPostRequest(new Callback(){
              @Override
              public void callback(Object json){
