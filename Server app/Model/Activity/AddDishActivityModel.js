@@ -10,20 +10,21 @@ module.exports=function(data,callback){
   var ingredients = data.activityData.dish.ingredients;
   var dish = new Dish(data.activityData.dish);
   async.waterfall([function(next){
-    user.login(next)
+    user.googleLogin(next);
   },
   function(success,next){
     if(success){
+      data.userInfo.token=user.data.token;
       console.log("calling check ingredients");
     Ingredient.checkIngredients(ingredients,next);
     console.log("checking ingredients done");
 
     }else {
-      callback(null,"login failed");
+      callback(null,null,"login failed");
     }
   },
   function(message,next){
-    if(message) callback(null,message);
+    if(message) callback(null,user,message);
     else{
       dish.data.author_id=user.data.id;
       console.log("calling save")
@@ -32,9 +33,10 @@ module.exports=function(data,callback){
   }
 ],
   function(err){
-    if(err) callback(err);
+
+    if(err) callback(err,user);
     else{
-      callback(err,"dish added succesfully")
+      callback(err,user,"dish added succesfully")
     }
   }
 );

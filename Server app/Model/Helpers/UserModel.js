@@ -97,11 +97,17 @@ User.prototype.googleSignUp=function(callback){
 
                       }else{
                       if(!rows.length){
+                        console.log(data);
                         connection.query("INSERT into users(name,email,google_id,picture,access_token,refresh_token)VALUES(?,?,?,?,?,?)",[data.displayName,data.emails[0].value,data.id,data.image.url,tokens.access_token,tokens.refresh_token],function(err,result){
-
-
-                          user.data.id=result.insertId;
+                          if(err){
+                            console.log(err);
+                            callback(err,0);
+                          }else{
+                            user.data.id=result.insertId;
                           callback(err,1);
+                        }
+
+
                         });
                       }else{
                         user.data.id=rows[0]['user_id'];
@@ -113,7 +119,6 @@ User.prototype.googleSignUp=function(callback){
                             }
                           });
 
-                        callback(err,1);
                       }
                     }
                   });
@@ -161,8 +166,9 @@ User.prototype.googleLogin=function(callback){
       });
     }
     ,function(data,next){
-      user.data.d=data;
+      //user.data.d=data;
       console.log(user.data.d);
+      next();
     }
   ],function(err){
     if(err) callback(err);

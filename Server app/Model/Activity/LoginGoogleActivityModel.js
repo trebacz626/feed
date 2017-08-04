@@ -9,7 +9,7 @@ module.exports=function(data,callback){
       if(success){
         callback(err,user);
       }else{
-        callback(err,nulls);
+        callback(err,null);
       }
     }
   });

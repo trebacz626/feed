@@ -67,31 +67,38 @@ router.route('/auth/google/callback')
 
 	router.route('/login/google')
 	  .get(function(req,res,next){
+			next();
+	  })
+	  .post(function(req,res,next){
 			var data={
 		    userInfo:{
 		      id:null,
-		      code:req.query.code,
+		      code:req.body.code,
 		    },
 		    activityData:{
 
 		    }
 		  }
-			loginGoogleActivityModel(data,function(err,correct){
+			loginGoogleActivityModel(data,function(err,user){
+
 				var response={
 					error:err,
-					userInfo:{
-			      id:user.data.id,
-			      //email:user.data.email,
-			      token:user.data.token
-			    }
-
 				}
-				res.json(response);
+					console.log(user);
+					if(user&&user.data){
+						response.userInfo={
+				      //email:user.data.email,
+				      token:user.data.token
+				    }
+					}else{
+						response.userInfo={};
+					}
+						res.json(response);
 
-			})
-	  })
-	  .post(function(req,res,next){
-	    next();
+
+
+
+			});
 	  });
 
 router.route('/logout')
@@ -117,9 +124,7 @@ router.route('/addDish')
   .post(function(req,res,next){
     var data={
 			userInfo:{
-				id:null,
-				email:req.body.mail,
-				password:md5(req.body.password),
+				token:req.body.token
 			},
 			activityData:{
 				dish:{
@@ -134,16 +139,19 @@ router.route('/addDish')
 			var ing = new Ingredient({id:null,name:req.body.ingredient[i]});
 			data.activityData.dish.ingredients.push(ing);
 		}
-		addDishActivity(data,function(err,message){
-
+		addDishActivity(data,function(err,user,message){
+			console.log("addDish");
 			var response={
-				error:null,
-				userInfo:data.userInfo,
+				error:err,
 				message: message
 			}
-			if(err){
+			if(user&&user.data){
 				console.log(err);
-				response.error=err;
+				response.userInfo={
+					token:user.data.token
+				};
+			}else{
+				response.userInfo=null;
 			}
 			res.json(response);
 		});
@@ -157,9 +165,7 @@ router.route('/simplesearch')
   .post(function(req,res,next){
 		var data={
 			userInfo:{
-				id:null,
-				email:req.body.mail,
-				password:md5(req.body.password),
+				token:req.body.token
 			},
 			activityData:{
 				ingredients:new Array()
@@ -172,17 +178,21 @@ router.route('/simplesearch')
 			data.activityData.ingredients.push(ing);
 		}
 
-		simpleSearchActivity(data,function(err,message,dishes){
+		simpleSearchActivity(data,function(err,user,message,dishes){
 			if(err){
 				res.json("error");
 			}else{
 				var response={
 					error:null,
-					userInfo:data.userInfo,
 					message: message,
 					result:{
 						dishes:dishes
 					}
+				}
+				if(user&&user.data){
+					response.userInfo={
+						token:user.data.token
+					};
 				}
 				if(err){
 					console.log(err);

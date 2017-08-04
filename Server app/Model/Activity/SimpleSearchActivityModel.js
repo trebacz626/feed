@@ -11,7 +11,7 @@ module.exports=function(data,callback){
   var dish = new Dish(data.activityData.dish);
 
   async.waterfall([function(next){
-    user.login(next)
+    user.googleLogin(next)
   },
   function(success,next){
     if(success){
@@ -20,11 +20,11 @@ module.exports=function(data,callback){
     console.log("checking ingredients done");
 
     }else {
-      callback(null,"login failed");
+      callback(null,null,"login failed");
     }
   },
   function(message,next){
-    if(message) callback(null,message);
+    if(message) callback(null,null,message);
     else{
 
       console.log("calling save")
@@ -35,7 +35,7 @@ module.exports=function(data,callback){
   function(err,dishes){
     if(err) callback(err);
     else{
-      callback(err,"search success",dishes);
+      callback(err,user,"search success",dishes);
     }
   }
 );
