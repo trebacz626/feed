@@ -8,6 +8,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
@@ -190,6 +191,7 @@ public class GoogleLoginActivity extends AppCompatActivity implements GoogleApiC
      }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.CUPCAKE)
     private void handleSignInResult(GoogleSignInResult result) {
         Log.d(TAG, "handleSignInResult:" + result.isSuccess());
      if (result.isSuccess()) {
@@ -199,16 +201,16 @@ public class GoogleLoginActivity extends AppCompatActivity implements GoogleApiC
          mStatusTextView.setText("Toke: "+ idToken);
          Log.d("D","Tokenn: "+ idToken);
          Log.d("D","Token: "+ acct.getServerAuthCode());
-         /*SendPostRequest sPR = new SendPostRequest(new Callback(){
+         SendPostRequest sPR = new SendPostRequest(new Callback(){
              @Override
              public void callback(Object json){
                  onJSONData((JSONObject)json);
              }
          });
          ArrayList<String[]> list= new ArrayList<String[]>();
-         list.add(new String[]{"URL","http://10.0.2.2:8080/api/googlelogin"});
-         list.add(new String[]{"token",idToken});
-         sPR.execute(list);*/
+         list.add(new String[]{"URL","http://10.0.2.2:8080/api/login/google"});
+         list.add(new String[]{"code",acct.getServerAuthCode()});
+         sPR.execute(list);
          updateUI(true);
         // Signed out, show unauthenticated UI.
          updateUI(false);
@@ -225,7 +227,7 @@ public class GoogleLoginActivity extends AppCompatActivity implements GoogleApiC
             try {
                 user.setName(json.getJSONObject("userInfo").getString("name"));
                 user.setName(json.getJSONObject("userInfo").getString("email"));
-                user.setToken(json.getJSONObject("userInfo").getString("password"));
+                user.setToken(json.getJSONObject("userInfo").getString("token"));
             } catch (JSONException e) {
                 e.printStackTrace();
             }

@@ -128,6 +128,8 @@ User.prototype.googleSignUp=function(callback){
             callback(err,0);
           }
         });
+  }else{
+    callback("no code",0);
   }
 }
 

@@ -176,7 +176,6 @@ public class MainActivity extends AppCompatActivity
         }else if (id == R.id.nav_search) {
             vf.setDisplayedChild(2);
         }else if (id == R.id.nav_add) {
-            Intent intent = new Intent(this,LoginActivity.class);
             vf.setDisplayedChild(3);
         }
 

@@ -7,12 +7,16 @@ var simpleSearchActivity = require('../Model/Activity/SimpleSearchActivityModel'
 var loginGoogleActivityModel = require('../Model/Activity/LoginGoogleActivityModel');
 var Ingredient = require('../Model/Helpers/IngredientModel');
 var crypto = require('crypto');
-
+var middleware= require('../middleware');
 function md5(string) {
 	return crypto.createHash('md5').update(string).digest('hex');
 }
 
 
+require('../Controller/controllers.js')(router);
+console.log("rr");
+
+/*
 router.get('/',function(req,res,next){
 	res.send("This is API");
 });
@@ -121,11 +125,10 @@ router.route('/addDish')
   .get(function(req,res,next){
     next();
   })
-  .post(function(req,res,next){
+  .post(middleware.authenticate(1),function(req,res,next){
+		console.log(res.locals);
     var data={
-			userInfo:{
-				token:req.body.token
-			},
+			user:res.locals.user,
 			activityData:{
 				dish:{
 					name:req.body.dishName,
@@ -135,23 +138,17 @@ router.route('/addDish')
 				}
 			}
 		}
-		for(var i=0;i<req.body.ingredient.length;i++){
+		console.log(data.toString());
+		for(let i=0;i<req.body.ingredient.length;i++){
 			var ing = new Ingredient({id:null,name:req.body.ingredient[i]});
 			data.activityData.dish.ingredients.push(ing);
 		}
-		addDishActivity(data,function(err,user,message){
+		addDishActivity(data,function(err,message){
 			console.log("addDish");
 			var response={
 				error:err,
-				message: message
-			}
-			if(user&&user.data){
-				console.log(err);
-				response.userInfo={
-					token:user.data.token
-				};
-			}else{
-				response.userInfo=null;
+				message: message,
+				data:data
 			}
 			res.json(response);
 		});
@@ -160,6 +157,7 @@ router.route('/addDish')
 
 router.route('/simplesearch')
   .get(function(req,res,next){
+		console.log(res.locals);
     next();
   })
   .post(function(req,res,next){
@@ -244,5 +242,6 @@ router.route('/addtrytrDish')
   .post(function(req,res,next){
     next();
   });
+*/
 
 module.exports=router;
