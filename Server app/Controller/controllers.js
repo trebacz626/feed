@@ -10,6 +10,11 @@ fs.readdirSync('./Controller').forEach(file => {
 
 });
   for(let i=0;i<controllers.length;i++){
+
+    if(!controllers[i].activities){
+      continue;
+    }
+
     for(let a=0;a<controllers[i].activities.length;a++){
       var tasks=[
         middlewares.checkData(controllers[i].activities[a].neededData),

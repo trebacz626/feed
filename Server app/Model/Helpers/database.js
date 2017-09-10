@@ -6,6 +6,14 @@ var connection = mysql.createConnection({
   database : 'simple-cookingdb'
 
 });
+connection.connect(function(err) {
+  if (err) {
+    console.error('error connecting: ' + err.stack);
+    return;
+  }
+
+  console.log('connected as id ' + connection.threadId);
+});
 var combiner= new Object();
 combiner.ingredientToDish=  function(ingredient,dish,callback){
 	connection.query("INSERT into ingredient_to_dish (ingredient_id,dish_id)VALUES(?,?)",[ingredient.data.id,dish.data.id],function(err,result){

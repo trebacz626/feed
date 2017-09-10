@@ -182,4 +182,12 @@ User.prototype.googleLogin=function(callback){
 
 }
 
+User.prototype.toResponse(){
+  var response={
+    id:this.data.id,
+    name:this.data.name,
+    
+  };
+}
+
 module.exports= User;
