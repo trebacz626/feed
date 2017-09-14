@@ -188,6 +188,7 @@ User.prototype.toResponse(){
     name:this.data.name,
     
   };
+  return response;
 }
 
 module.exports= User;

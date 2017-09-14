@@ -142,5 +142,18 @@ Dish.prototype.save = function(callback){
   });
 }
 
+Dish.prototype.toResponse = function () {
+  var ingredients = [];
+  for (ing in this.data.ingredients) {
+    ingredients.push(ing.toResponse);
+  }
+  var response = {
+    id: this.data.id,
+    name: this.data.name,
+    recipe: this.data.recipe,
+    ingredients:ingredients
+  }
+}
+
 
 module.exports= Dish;

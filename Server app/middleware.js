@@ -1,7 +1,7 @@
 var googleStuff=require('./config/google');
 var async= require('async');
 var connection=require('./Model/Helpers/database');
-var User = require('./MOdel/Helpers/UserModel');
+var User = require('./Model/Helpers/UserModel');
 
 var roles={
   Guest:0,
@@ -12,14 +12,20 @@ var roles={
 
 var authenticate = function(role){
   return function(req,res,next){
-    var access_token = req.body.access_token||req.body.access_token||req.headers['access_token'];
-
+    var access_token = req.body.access_token || req.body.access_token || req.headers['access_token'];
+    var device_key = req.body.device_key || req.body.device_key || req.headers['device_key'];
+    if (!device_key) {
+      res.json({
+        error:"No device key provided"
+      });
+      return;
+    }
     if(access_token){
       var oauth2Client = googleStuff.getOAuthClient();
       var user = new User({access_token:access_token});
       async.waterfall([
-        function(callback){
-          connection.query("SELECT 	refresh_token,user_id from users WHERE access_token=?",user.data.token,callback);
+        function (callback) {
+          connection.query("SELECT 	refresh_token,user_id from users WHERE access_token=? AND device_id=?", [user.data.token, device_key], callback);
         },
         function(rows,fields,callback){
           if(rows.length){

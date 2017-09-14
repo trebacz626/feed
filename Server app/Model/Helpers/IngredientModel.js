@@ -96,5 +96,11 @@ Ingredient.prototype.save = function(callback){
   });
 }
 
-
+Ingredient.prototype.toResponse = function () {
+  var response = {
+    id: this.data.id,
+    name: this.data.name
+  }
+  return response;
+}
 module.exports= Ingredient;
