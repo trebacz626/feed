@@ -17,6 +17,7 @@
     "express-session": "",
     "formidable": "^1.1.1",
     "googleapis": "",
+    "jsonwebtoken": "^8.0.1",
     "morgan": "~1.7.0",
     "mysql": "",
     "serve-favicon": "~2.3.2"

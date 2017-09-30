@@ -64,7 +64,6 @@ simple={
 
 var activities=[];
 activities.push(simple);
-console.log(activities);
 controller={
   name:'search',
   activities:activities

@@ -10,25 +10,33 @@ var roles={
   Admin:3
 }
 
+//rewrite for my own accessTokens
 var authenticate = function(role){
+
   return function(req,res,next){
+    console.log("auth");
+    res.locals.user= new User({role:roles.Guest,isAuthenticated:false});
+    next();
+    return;
     var access_token = req.body.access_token || req.body.access_token || req.headers['access_token'];
     var device_key = req.body.device_key || req.body.device_key || req.headers['device_key'];
-    if (!device_key) {
+    /*if (!device_key) {
       res.json({
         error:"No device key provided"
       });
       return;
-    }
+    }*/
     if(access_token){
       var oauth2Client = googleStuff.getOAuthClient();
       var user = new User({access_token:access_token});
       async.waterfall([
         function (callback) {
-          connection.query("SELECT 	refresh_token,user_id from users WHERE access_token=? AND device_id=?", [user.data.token, device_key], callback);
+          console.log(user.data);
+          connection.query("SELECT     refresh_token,user_id from users WHERE access_token=?",user.data.access_token,callback);
         },
         function(rows,fields,callback){
           if(rows.length){
+            console.log(rows[0]);
             user.data=rows[0];
             oauth2Client.setCredentials({
               access_token:user.data.access_token,
@@ -41,7 +49,12 @@ var authenticate = function(role){
 
 
           }else{
-            callback("Invalid token");
+            if(role>0){
+              res.status(401).send('Invalid tokenn');
+            }else{
+              res.locals.user= new User({role:roles.Guest,isAuthenticated:false});
+              next();
+            }
           }
         },function(access_token,callback){
           user.data.access_token=access_token;
@@ -56,6 +69,7 @@ var authenticate = function(role){
           callback();
         }
       ],function(err){
+        console.log(err);
         if(err) res.status(401).send("Invalid token");
         else{
           next();

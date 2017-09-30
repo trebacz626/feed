@@ -38,12 +38,12 @@ post={
     },
     function(message,next){
       if(message) res.json({
-        userInfo:user.data,
+        userInfo:user.toResponse(),
         message:message
       });
       else{
         console.log(dish);
-        dish.data.author_id=user.data.id;
+        dish.data.author_id=/*user.data.id*/11;
         console.log("calling save")
         dish.save(next);
       }
@@ -52,27 +52,74 @@ post={
     function(err){
       console.log(err);
       if(err) res.json({
-        userInfo:user.data,
+        userInfo:user.toResponse(),
         error:err
       });
       else{
         res.json({
-          userInfo:user.data,
-          dish:dish
+          userInfo:user.toResponse(),
+          dish:dish.toResponse()
         });
       }
     }
 );
   },
   neededData:[],
-  authenticationLevel:1,
+  authenticationLevel:0,
   localMiddlewares:[
     datSerializer
   ]
 
 }
+
+get={
+  name:'',
+  special_path:null,
+  method:'get',
+  task:function(req,res,next){
+    console.log("id");
+    var user = res.locals.user;
+    async.waterfall([
+    function(next){
+      console.log("Get by id")
+        Dish.getById(res.locals.data.dish.id,next);
+
+    }
+  ],
+    function(err,dish){
+      console.log(err);
+      if(err) res.json({
+        userInfo:user.toResponse(),
+        error:err
+      });
+      else{
+        res.json({
+          userInfo:user.toResponse(),
+          dish:dish.toResponse()
+        });
+      }
+    }
+);
+  },
+  neededData:[],
+  authenticationLevel:0,
+  localMiddlewares:[
+    function(req,res,next){
+      console.log()
+      var data={
+        dish:{
+    					id:req.query.id
+    				}
+      }
+      res.locals.data=data;
+      next();
+    }
+  ]
+
+}
 var activities=[];
 activities.push(post);
+activities.push(get);
 controller={
   name:'dish',
   activities:activities

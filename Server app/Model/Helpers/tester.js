@@ -25,12 +25,18 @@ Ingredient.checkIngredients(ingredients,function(err,message){
 var User = require('./UserModel');
 var googleStuff = require('../../config/google');
 var connection =require ('./database');
-var user = new User({});
-user.data.code="4/ebPWvPPlaamIS8YEhCfKxfoMjSSzf3ofD2HnnHDV1g4";
-user.googleSignUp(function(err,correct){
-  console.log(err);
-  console.log(correct);
-});
+
+  User.getByRefreshToken("15.93beb1c6164451269053265aa27e8d38f11fc3e7394f36493e294bc921c74f2a3fa38edffb7f31b6",function(err,user){
+    if(err){
+      console.log(err);
+    }else{
+      user.data.access_token=user.generateAccessToken();
+      console.log("tester");
+      console.log(user.toResponse());
+    }
+
+  });
+
 
 
 

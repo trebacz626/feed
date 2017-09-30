@@ -23,7 +23,7 @@ fs.readdirSync('./Controller').forEach(file => {
         controllers[i].activities[a].task];
         var path=controllers[i].activities[a].special_path||"/"+controllers[i].name+'/'+controllers[i].activities[a].name;
         console.log(path);
-
+        console.log(tasks);
       switch(controllers[i].activities[a].method){
         case "get":
           router.get(path,tasks);
@@ -41,7 +41,7 @@ fs.readdirSync('./Controller').forEach(file => {
           router.use(path,tasks);
 
       }
-      console.log(router.params);
+      //console.log(router.params);
     }
   }
 }

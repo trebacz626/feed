@@ -1,7 +1,9 @@
 var connection= require('./database');
 var async = require('async');
 var googleStuff = require('../../config/google');
-
+var crypto = require('crypto');
+var jwt=require("jsonwebtoken");
+var authConfig=require("../../config/auth")
 var User = function(data){
   this.data=data;
 }
@@ -14,10 +16,11 @@ User.getById = function (id,callback) {
     callback(err);
   }else{
     data={
+      user_id:id,
       name:rows[0]['name'],
       picture:rows[0]['picture']
   };
-    callback(null,data);
+    callback(null,new User(data));
   }
 });
 };
@@ -89,8 +92,8 @@ User.prototype.googleSignUp=function(callback){
                         resolve(response || err);
                     });
                 }).then(function (data) {
-                    user.data.token=tokens.access_token;
-                    connection.query("SELECT 	user_id from users WHERE google_id=?",data.id,function(err,rows){
+                    //user.data.token=tokens.access_token;
+                    connection.query("SELECT 	user_id,name,email,google_id,picture,refresh_token from users WHERE google_id=?",data.id,function(err,rows){
                       if(err){
 
                         callback(err,0);
@@ -98,11 +101,12 @@ User.prototype.googleSignUp=function(callback){
                       }else{
                       if(!rows.length){
                         console.log(data);
-                        connection.query("INSERT into users(name,email,google_id,picture,access_token,refresh_token)VALUES(?,?,?,?,?,?)",[data.displayName,data.emails[0].value,data.id,data.image.url,tokens.access_token,tokens.refresh_token],function(err,result){
+                        connection.query("INSERT into users(name,email,google_id,picture,google_refresh_token,refresh_token)VALUES(?,?,?,?,?,?)",[data.displayName,data.emails[0].value,data.id,data.image.url,tokens.refresh_token,user.generateRefreshToken()],function(err,result){
                           if(err){
                             console.log(err);
                             callback(err,0);
                           }else{
+                            console.log(result);
                             user.data.id=result.insertId;
                           callback(err,1);
                         }
@@ -111,13 +115,7 @@ User.prototype.googleSignUp=function(callback){
                         });
                       }else{
                         user.data.id=rows[0]['user_id'];
-                          connection.query("UPDATE users SET access_token=? WHERE user_id=?",[user.data.token ,user.data.id],function(err,result){
-                            if(err){
-                              callback(err,0);
-                            }else{
-                              callback(err,1)
-                            }
-                          });
+                        callback(err,1);
 
                       }
                     }
@@ -125,7 +123,8 @@ User.prototype.googleSignUp=function(callback){
                 });
           }
           else{
-            callback(err,0);
+
+            callback("Wrong code",0);
           }
         });
   }else{
@@ -133,6 +132,59 @@ User.prototype.googleSignUp=function(callback){
   }
 }
 
+User.prototype.generateRefreshToken=function(){
+  var self=this;
+  return self.data.user_id+'.'+crypto.randomBytes(40).toString('hex');
+}
+
+User.prototype.generateAccessToken=function(){
+  var self=this;
+  return jwt.sign({
+    id:self.data.user_id
+  },authConfig.jwtSecret,
+{
+  expiresIn: 60*60
+})
+}
+
+User.getByAccessToken=function(token,callback){
+  jwt.verify(tokentoken,authConfig.jwtSecret,function(err,decoded){
+    if(err){
+      callback(err)
+    }else{
+      User.getById(decoded.id,function(err,user){
+        if(err) callback(err)
+        else{
+          return user;
+
+
+        }
+      })
+    }
+  });
+}
+
+User.getByRefreshToken=function(token,callback){
+  console.log(token);
+  connection.query("SELECT user_id,name,picture from users where refresh_token=?",token,function(err,rows){
+
+  if(err){
+    console.log("error");
+    callback(err);
+  }else{
+    console.log(rows[0]);
+    if(!rows.length){
+      callback("wrong refresh token");
+    }else{
+    callback(null,new User(
+      {user_id:rows[0]['user_id'],
+      name:rows[0]['name'],
+      picture:rows[0]['picture']
+  }));
+  }
+  }
+});
+}
 
 User.prototype.googleLogin=function(callback){
   var user=this;
@@ -182,12 +234,8 @@ User.prototype.googleLogin=function(callback){
 
 }
 
-User.prototype.toResponse(){
-  var response={
-    id:this.data.id,
-    name:this.data.name,
-    
-  };
+User.prototype.toResponse=function(){
+  var response=this.data;
   return response;
 }
 
