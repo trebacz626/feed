@@ -11,34 +11,55 @@ var Dish = function(data){
 Dish.prototype.data = {}
 
 Dish.getById = function (id,callback) {
-  connection.query("SELECT name,recipe,author_id from dishes where dish_id=?",id,function(err,rows){
-    if(err){
+  var dish={};
+  async.waterfall([
+    function(cb){
+      connection.query("SELECT name,recipe,author_id from dishes where dish_id=?",id,function(err,rows){
+        if(err){
+          err="Databse error"
+        }
+        cb(err,rows);
+      });
+    },function(rows,cb){
+      if(!rows.length){
+        cb("No dish with this id");
+      }else{
+        dish =new Dish({
+          dish_id:id,
+          name:rows[0].name,
+          recipe:rows[0].recipe,
+          author_id:rows[0].author_id
+        });
+        dish.getIngredients(cb);
+      }
+    }
+  ],function(err){
+    if(err) {
       callback(err);
     }else{
-      if(!rows.length){
-        callback("No dish with this id");
-      }else{
-        console.log("return dish");
-
-        callback(null,new Dish(rows[0]));
-      }
-
+      callback(null,dish);
     }
   });
 };
 
 Dish.prototype.getIngredients=function(callback){
   var self=this;
-  connection.query("SELECT ingredients.ingredient_name,ingredients.ingredient_id FROM ingredients INNER JOIN ingredient_to_dish ON ingredients.ingredient_id=ingredient_to_dish.ingredient_id WHERE dish_id=?",self.data.id,function(err,rows){
+
+  connection.query("SELECT ingredients.ingredient_name,ingredients.ingredient_id FROM ingredients INNER JOIN ingredient_to_dish ON ingredients.ingredient_id=ingredient_to_dish.ingredient_id WHERE dish_id=?",self.data.dish_id,function(err,rows){
     if(err){
       callback(err);
     }else{
       if(!rows.length){
         callback("No ingredients with this id");
       }else{
-        console.log("return dish");
-
-        callback(null,new Dish(rows[0]));
+        self.data.ingredients=[];
+        for(let i=0;i<rows.length;i++){
+          self.data.ingredients.push(new Ingredient({
+            name:rows[i].ingredient_name,
+            id:rows[i].ingredient_id}));
+        }
+        console.log(self.toResponse());
+        callback(err);
       }
 
     }
@@ -68,28 +89,12 @@ Dish.simpleSearch= function(ingredients,callback){
         dish.data.name=rows[i].name;
         dish.data.recipe=rows[i].recipe;
         dish.data.ingredients= new Array();
-        dish.data.id=rows[i].dish_id;
+        dish.data.dish_id=rows[i].dish_id;
         dishes.push(dish);
-        items.push({
-          query:"SELECT ingredients.ingredient_name,ingredients.ingredient_id FROM ingredients INNER JOIN ingredient_to_dish ON ingredients.ingredient_id=ingredient_to_dish.ingredient_id WHERE dish_id="+ dish.data.id,
-          index:i
-        });
       };
 
-      async.each(items,function(item,callback){
-        connection.query(item.query,{},function(err,rows){
-          if(err){
-            callback(err);
-          }else{
-            for(var i=0;i<rows.length;i++){
-
-            dishes[item.index].data.ingredients.push(new Ingredient({
-              name:rows[i].ingredient_name,
-              id:rows[i].ingredient_id}));
-          }
-          callback();
-          }
-        });
+      async.each(dishes,function(dish,callback){
+        dish.getIngredients(callback);
       },
       function(err){
         if(err){
@@ -97,7 +102,6 @@ Dish.simpleSearch= function(ingredients,callback){
         }else{
           for(var i=0;i<dishes.length;i++){
             for(var a=0;a<dishes[i].data.ingredients.length;a++){
-              console.log(a);
               var was=false;
               for(var b=0;b<ingredients.length;b++){
                 if(dishes[i].data.ingredients[a].data.name==ingredients[b].data.name){
@@ -163,13 +167,21 @@ Dish.prototype.save = function(callback){
   });
 }
 
+Dish.prototype.update = function(callback){
+  var self = this;
+  //TODO
+}
+
 Dish.prototype.toResponse = function () {
   var ingredients = [];
-  for (let i=0;i<this.data.ingredients.length;i++) {
-    ingredients.push(this.data.ingredients[i].toResponse());
+  if(this.data.ingredients){
+    for (let i=0;i<this.data.ingredients.length;i++) {
+      ingredients.push(this.data.ingredients[i].toResponse());
+    }
   }
+
   var response = {
-    id: this.data.id,
+    dish_id: this.data.dish_id,
     name: this.data.name,
     recipe: this.data.recipe,
     ingredients:ingredients

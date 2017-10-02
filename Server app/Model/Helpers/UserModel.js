@@ -1,6 +1,6 @@
 var connection= require('./database');
 var async = require('async');
-var googleStuff = require('../../config/google');
+var googleStuff = require('../../services/google');
 var crypto = require('crypto');
 var jwt=require("jsonwebtoken");
 var authConfig=require("../../config/auth")
@@ -25,16 +25,6 @@ User.getById = function (id,callback) {
 });
 };
 
-/*User.getById = function (id,mainCallback) {
-  async.waterfall([
-    function(next){
-      connection.query("SELECT name,picture from users where user_id=?",id,next(err,rows));
-    },
-    function(err,rows,next){
-
-    }
-  ],main);
-};*/
 
 User.checkIfExist = function (email,callback) {
   connection.query("SELECT 	user_id from users WHERE email=?",email,function(err,rows){
@@ -148,16 +138,15 @@ User.prototype.generateAccessToken=function(){
 }
 
 User.getByAccessToken=function(token,callback){
-  jwt.verify(tokentoken,authConfig.jwtSecret,function(err,decoded){
+  jwt.verify(token,authConfig.jwtSecret,function(err,decoded){
     if(err){
-      callback(err)
+      callback("Invalid access token");
     }else{
+      console.log("verified");
       User.getById(decoded.id,function(err,user){
-        if(err) callback(err)
+        if(err) callback(err);
         else{
-          return user;
-
-
+          callback(err,user);
         }
       })
     }

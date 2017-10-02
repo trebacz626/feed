@@ -65,7 +65,7 @@ post={
 );
   },
   neededData:[],
-  authenticationLevel:0,
+  authenticationLevel:1,
   localMiddlewares:[
     datSerializer
   ]

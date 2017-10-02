@@ -7,7 +7,7 @@ var datSerializer=function(req,res,next){
   var data={
     ingredient:{
 					id:null,
-					name:req.body.ingredient_name
+					name:req.body.name
 				}
   }
   res.locals.data=data;
@@ -37,6 +37,7 @@ post={
       }
     ],function(err){
       if(err){
+        console.log(err);
         res.json({
           userInfo:user.data,
           error:err

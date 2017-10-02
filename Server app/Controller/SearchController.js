@@ -45,10 +45,15 @@ simple={
         error:err
       });
       else{
+        var toResponsedishes=[];
+        for(let i=0;i<dishes.length;i++){
+          toResponsedishes.push(dishes[i].toResponse());
+        }
+
         console.log(user.data);
         res.json({
           userInfo:user.data,
-          dishes:dishes
+          dishes:toResponsedishes
         })
       }
     }
