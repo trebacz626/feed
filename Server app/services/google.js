@@ -3,21 +3,21 @@ var google = require('googleapis');
 var OAuth2 = google.auth.OAuth2;
 var plus = google.plus('v1');
 var googleDATA=require("../config/google");
-
+var async = require("async");
+console.log(googleDATA);
 google.options({
   auth: new OAuth2(googleDATA.ClientId ,  googleDATA.ClientSecret, googleDATA.RedirectionUrl)
 });
 var getOAuthClient=function(callback){
 	google.auth.getApplicationDefault(function (err, authClient, projectId) {
-		if(err){
-			err="Failed to get googleAPI client";
-		}
+		//if(err){err="Failed to get googleAPI client";
 		callback(err,authClient,projectId);
 	})
 }
 
 var getAuthUrl=function(){
     var oauth2Client = this.getOAuthClient();
+
     // generate a url that asks permissions for Google+ and Google Calendar scopes
     var scopes = [
       'https://www.googleapis.com/auth/plus.me',
@@ -44,15 +44,17 @@ var exchangeCode=function(code,callback){
 		function(authClient,projektId,next){
 			client=authClient;
 			client.getToken(code,next);
-		},function(tokens){
-			client.setCredentials(tokens,next);
+		},function(tokens,next){
+			client.setCredentials(tokens);
 			plus.people.get({ userId: 'me', auth: oauth2Client }, next)
 		}
 
-	],function(err){
+	],function(err,data){
 		callback(err,data)
 	})
 }
 module.exports={
-	getAuthUrl:getAuthUrl
+  getOAuthClient:getOAuthClient,
+	getAuthUrl:getAuthUrl,
+  exchangeCode:exchangeCode,
 }
