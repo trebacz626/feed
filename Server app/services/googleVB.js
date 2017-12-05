@@ -26,23 +26,42 @@ var async = require("async");
   }
 
  var exchangeCode=function(code,callback){
- 	var client=getOAuthClient();
- 	async.waterfall([
- 		function(next){
- 			client.getToken(code,next);
- 		},function(tokens,next){
- 			client.setCredentials(tokens);
- 			plus.people.get({ userId: 'me', auth: client }, next)
- 		}
+   oauth2Client=getOAuthClient();
+   oauth2Client.getToken(code, function(err, tokens) {
+         if(!err) {
+           oauth2Client.setCredentials(tokens);
+                   plus.people.get({ userId: 'me', auth: oauth2Client }, function(err, response) {
+                    callback(err,response);
+                   });
+       }else{
+         callback("Invalid code");
+       }
 
- 	],function(err,data){
- 		callback(err,data)
- 	})
+ })
  }
+
+ var getDetails=function(access_token,callback){
+   oauth2Client=getOAuthClient();
+   oauth2Client.setCredentials({access_token:access_token});
+   plus.people.get({ userId: 'me', auth: oauth2Client }, function(err, response) {
+            callback(err,response);
+           });
+ }
+
+ var refreshToken=function(refreshToken,callback){
+   oauth2Client.setCredentials({refresh_token:refreshToken});
+   oauth2Client.refreshAccessToken(function(err,tokens){
+     callback(err,tokens);
+   });
+ }
+
+
+
 
 
  module.exports={
    getOAuthClient:getOAuthClient,
    getAuthUrl:getAuthUrl,
-   exchangeCode:exchangeCode
+   exchangeCode:exchangeCode,
+   plus:plus
  }

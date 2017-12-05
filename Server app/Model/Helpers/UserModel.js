@@ -1,6 +1,6 @@
 var connection= require('./database');
 var async = require('async');
-var googleStuff = require('../../services/google');
+var googleStuff = require('../../services/googleVB');
 var crypto = require('crypto');
 var jwt=require("jsonwebtoken");
 var authConfig=require("../../config/auth")
@@ -15,12 +15,7 @@ User.getById = function (id,callback) {
   if(err){
     callback(err);
   }else{
-    data={
-      user_id:id,
-      name:rows[0]['name'],
-      picture:rows[0]['picture']
-  };
-    callback(null,new User(data));
+    callback(null,new User( User.convertDataFromDatabase(rows[0])));
   }
 });
 };
@@ -39,13 +34,22 @@ User.checkIfExist = function (email,callback) {
     }
   });
 }
-User.prototype.save = function(email,password,callback){
-  connection.query("INSERT into users(email,password)VALUES(?,?)",[email,password],function(err,result){
+User.prototype.save = function(callback){
+  var self = this;
+  connection.query("INSERT into users(name,email,google_id,picture,google_refresh_token)VALUES(?,?,?,?,?)",[self.data.name,self.data.email,self.data.googleId,self.data.picture,self.data.googleRefreshToken],function(err,result){
     if(err){
       callback(err);
     }else{
-      callback(null,result.insertId);
+      self.data.id=result.insertId;
+      callback(null);
     }
+  });
+}
+
+User.prototype.update = function(DBvalueName,userValue,callback){
+  var self = this;
+  connection.query("UPDATE users SET "+DBvalueName+"=? WHERE user_id = ?",[userValue,self.data.id],function(err,result){
+    callback(err,result);
   });
 }
 
@@ -68,6 +72,44 @@ User.prototype.login=function(callback){
   }
 
 }
+User.convertDataFromDatabase=function(row){
+  return{
+    id:row['user_id'],
+    name:row['name'],
+    email:row['email'],
+    picture:row['picture'],
+    refreshToken:row['refresh_token'],
+    googleId:row['google_id'],
+    googleRefreshToken:row['google_refresh_token']
+  }
+
+}
+
+
+User.getByGoogleId=function(gId,callback){
+  connection.query("SELECT 	user_id,name,email,picture,refresh_token from users WHERE google_id=?",gId,function(err,rows){
+    if(err)callback(err);
+    else{
+      if(!rows.length){callback("There is no user with this id");return;}
+      var user=new User( User.convertDataFromDatabase(rows[0]));
+      callback(err,user);
+    }
+  })
+}
+
+User.checkIfExistByGoogleId = function (gId,callback) {
+  connection.query("SELECT 	user_id from users WHERE google_id=?",gId,function(err,rows){
+    if(err){
+      callback(err);
+    }else{
+      if(!rows.length){
+        callback(null,false);
+      }else{
+        callback(null,true);
+      }
+    }
+  });
+}
 
 User.prototype.googleSignUp=function(callback){
   var user=this;
@@ -79,6 +121,8 @@ User.prototype.googleSignUp=function(callback){
             oauth2Client.setCredentials(tokens);
             var p = new Promise(function (resolve, reject) {
                     googleStuff.plus.people.get({ userId: 'me', auth: oauth2Client }, function(err, response) {
+              console.log("user ERROR");
+              console.log(err);
                         resolve(response || err);
                     });
                 }).then(function (data) {
@@ -124,13 +168,13 @@ User.prototype.googleSignUp=function(callback){
 
 User.prototype.generateRefreshToken=function(){
   var self=this;
-  return self.data.user_id+'.'+crypto.randomBytes(40).toString('hex');
+  return self.data.id+'.'+crypto.randomBytes(40).toString('hex');
 }
 
 User.prototype.generateAccessToken=function(){
   var self=this;
   return jwt.sign({
-    id:self.data.user_id
+    id:self.data.id
   },authConfig.jwtSecret,
 {
   expiresIn: 60*60
@@ -146,6 +190,7 @@ User.getByAccessToken=function(token,callback){
       User.getById(decoded.id,function(err,user){
         if(err) callback(err);
         else{
+          user.data.id=decoded.id;
           callback(err,user);
         }
       })
@@ -165,11 +210,7 @@ User.getByRefreshToken=function(token,callback){
     if(!rows.length){
       callback("wrong refresh token");
     }else{
-    callback(null,new User(
-      {user_id:rows[0]['user_id'],
-      name:rows[0]['name'],
-      picture:rows[0]['picture']
-  }));
+    callback(null,new User( User.convertDataFromDatabase(rows[0])));
   }
   }
 });

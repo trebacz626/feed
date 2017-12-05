@@ -45,7 +45,7 @@ post={
       }else{
         res.json({
           userInfo:user.data,
-          ingredient:ingredient
+          ingredient:ingredient.toResponse()
         });
       }
     });

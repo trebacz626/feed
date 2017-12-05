@@ -43,7 +43,7 @@ app.use(Session({
 
 //app.use('/', index);
 //app.use('/users', users);
-require('./routes/routes')(app,googleStuff,connection);
+//require('./routes/routes')(app,googleStuff,connection);
 
 var apiRouter = require('./routes/api');
 
