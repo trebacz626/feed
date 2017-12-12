@@ -1,38 +1,58 @@
 var User= require("../Model/Helpers/UserModel");
 var async=require("async");
-
+var googleStuff=require("../services/googleVB");
 
 google={//return access_token and refresh token
-  name:'google',
+  name:'google/callback',
   special_path:null,
   method:'get',
-  task:function(req,res,next){
-    console.log("id");
+  task:function(req,res,nextM){
     var user = res.locals.user;
+    oauth2Client=googleStuff.getOAuthClient();
+    var googleData ={};
     async.waterfall([
-      user.googleSignUp(callback),
-      function(success){
-        if(success){
-          res.json({
-            userInfo:user.toResponse()
-          })
+      function(next){
+        oauth2Client.getToken(res.locals.data.code,function(err,tokens){ next(err,tokens)});
+      },function(tokens,next){
+        oauth2Client.setCredentials(tokens);
+        googleStuff.plus.people.get({ userId: 'me', auth: oauth2Client }, function(err, response) {next(err,response)});
+      },function(data,next){
+        googleData=data;
+        User.checkIfExistByGoogleId(googleData.id,next);
+      },function(exists,next){
+        if(exists){
+          User.getByGoogleId(googleData.id,next);
         }else{
-          res.json({
-            error:"Could not sign in with google"
+          var userLoc = new User({
+            googleId:googleData.id,
+            googleRefreshToken:oauth2Client.credentials.refresh_token,
+            name:googleData.displayName,
+            email:googleData.emails[0].value,
+            picture:googleData.image.url,
+          });
+          userLoc.save(function(err){
+            if(err){next(err);return;}
+            userLoc.data.refreshToken=userLoc.generateRefreshToken();
+            userLoc.update("refresh_token",userLoc.data.refreshToken,function(err,result){
+              if(err){next(err);return;}
+              next(err,userLoc);
+            });
+
           });
         }
+      },function(receviedUser,next){
+        user=receviedUser;
+        user.data.accessToken=user.generateAccessToken();
+        next(null);
       }
   ],
     function(err){
-      console.log(err);
       if(err) res.json({
-        userInfo:user.toResponse(),
         error:err
       });
       else{
         res.json({
-          userInfo:user.toResponse(),
-          dish:dish.toResponse()
+          userInfo:user.toResponse()
         });
       }
     }
@@ -44,7 +64,7 @@ google={//return access_token and refresh token
     function(req,res,next){
       console.log("serialize")
       var data={
-        code:req.body.code
+        code:req.query.code
       }
       res.locals.data=data;
         next();

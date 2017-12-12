@@ -29,7 +29,14 @@ app.use(Session({
     saveUninitialized: true
 }));
 
+<<<<<<< HEAD
 require('./routes/routes')(app,googleStuff,connection);
+=======
+
+//app.use('/', index);
+//app.use('/users', users);
+//require('./routes/routes')(app,googleStuff,connection);
+>>>>>>> e2385152e8973206e73ec038096bdca0037954de
 
 
 

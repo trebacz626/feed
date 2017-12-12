@@ -43,7 +43,7 @@ post={
       });
       else{
         console.log(dish);
-        dish.data.author_id=/*user.data.id*/11;
+        dish.data.author_id=user.data.id//11;
         console.log("calling save")
         dish.save(next);
       }
