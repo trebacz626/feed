@@ -66,7 +66,7 @@ Dish.prototype.getIngredients=function(callback){
   });
 }
 
-Dish.simpleSearch= function(ingredients,callback){
+Dish.simpleSearch= function(ingredients,callback){//TODO move to search controller
   var query="SELECT dishes.dish_id,dishes.name,dishes.recipe,ingredients.ingredient_name FROM dishes INNER JOIN ingredient_to_dish ON dishes.dish_id=ingredient_to_dish.dish_id INNER JOIN ingredients ON ingredients.ingredient_id=ingredient_to_dish.ingredient_id where ingredients.ingredient_name in (";
   for(var i=0;i<ingredients.length;i++){
     if(ingredients[i].data.id!=null){

@@ -5,21 +5,10 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-/*var mysql = require('mysql');
-var connection = mysql.createConnection({
-	host     : 'localhost',
-  user     : 'simple-cookingdbadmin',
-  password : 'simple-cookingdbadmin626',
-  database : 'simple-cookingdb'
-
-});*/
 var connection = require('./Model/Helpers/database');
-
 var busboy = require('connect-busboy');
 var googleStuff=require('./config/google');
-//var index = require('./routes/index');
-//var users = require('./routes/users');
-
+var apiRouter = require('./routes/api');
 var app = express();
 
 // view engine setup
@@ -40,20 +29,10 @@ app.use(Session({
     saveUninitialized: true
 }));
 
-
-//app.use('/', index);
-//app.use('/users', users);
 require('./routes/routes')(app,googleStuff,connection);
 
-var apiRouter = require('./routes/api');
 
-/*apiRouter.get('/',function(req,res,next){
-	res.send("hello");
-});
 
-apiRouter.get('/test',function(req,res,next){
-	res.send("test");
-});*/
 app.use('/api',apiRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -76,30 +55,15 @@ app.use(function(err, req, res, next) {
 var debug = require('debug')('sql:server');
 var http = require('http');
 
-/**
- * Get port from environment and store in Express.
- */
-
 var port = normalizePort(process.env.PORT || '8080');
 app.set('port', port);
 
-/**
- * Create HTTP server.
- */
-
+//create adn setup sever
 var server = http.createServer(app);
-
-/**
- * Listen on provided port, on all network interfaces.
- */
-
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 console.log("ready");
-/**
- * Normalize a port into a number, string, or false.
- */
 
 function normalizePort(val) {
   var port = parseInt(val, 10);
