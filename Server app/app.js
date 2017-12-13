@@ -5,9 +5,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var connection = require('./Model/Helpers/database');
 var busboy = require('connect-busboy');
-var googleStuff=require('./config/google');
 var apiRouter = require('./routes/api');
 var app = express();
 
@@ -29,7 +27,7 @@ app.use(Session({
     saveUninitialized: true
 }));
 
-require('./routes/routes')(app,googleStuff,connection);
+require('./routes/routes')(app);
 
 //app.use('/', index);
 //app.use('/users', users);

@@ -1,7 +1,6 @@
-module.exports=function(app,googleStuff,connection){
+var googleStuff = require("../services/googleVB");
+module.exports=function(app){
 
-	var async = require("async");
-	var crypto = require('crypto');
 
 	app.get("/", function (req, res) {
 	    var url = googleStuff.getAuthUrl();
