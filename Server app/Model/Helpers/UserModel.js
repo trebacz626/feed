@@ -3,7 +3,8 @@ var async = require('async');
 var googleStuff = require('../../services/googleVB');
 var crypto = require('crypto');
 var jwt=require("jsonwebtoken");
-var authConfig=require("../../config/auth")
+var authConfig=require("../../config/auth");
+var Pair = require("../../Utils/Pair");
 var User = function(data){
   this.data=data;
 }
@@ -12,12 +13,12 @@ User.prototype.data = {}
 
 User.getById = function (id,callback) {
   connection.query("SELECT name,picture from users where user_id=?",id,function(err,rows){
-  if(err){
-    callback(err);
-  }else{
-    callback(null,new User( User.convertDataFromDatabase(rows[0])));
-  }
-});
+    if(err){
+      callback(err);
+    }else{
+      callback(null,new User( User.convertDataFromDatabase(rows[0])));
+    }
+  });
 };
 
 
@@ -34,6 +35,7 @@ User.checkIfExist = function (email,callback) {
     }
   });
 }
+
 User.prototype.save = function(callback){
   var self = this;
   connection.query("INSERT into users(name,email,google_id,picture,google_refresh_token)VALUES(?,?,?,?,?)",[self.data.name,self.data.email,self.data.googleId,self.data.picture,self.data.googleRefreshToken],function(err,result){
@@ -46,13 +48,59 @@ User.prototype.save = function(callback){
   });
 }
 
-User.prototype.update = function(DBvalueName,userValue,callback){
+User.prototype.updateValue = function(DBvalueName,userValue,callback){
   var self = this;
   connection.query("UPDATE users SET "+DBvalueName+"=? WHERE user_id = ?",[userValue,self.data.id],function(err,result){
     callback(err,result);
   });
 }
 
+User.prototype.updateValues = function(pairs,callback){
+  var self = this;
+  var query="UPDATE users SET ";
+  var values=[];
+  for(let i=0;i<pairs.length;i++){
+    query+=pairs[i].key+"=?";
+    values.push(self.data[pairs[i].value]);
+    if(i+1!=pairs.length)query+=",";
+  }
+  query+=" WHERE user_id = ?";
+  values.push(self.data.id);
+  connection.query("UPDATE users SET "+DBvalueName+"=? WHERE user_id = ?",values,function(err,result){
+    callback(err,result);
+  });
+}
+
+User.prototype.updateBasic=function(callback){
+  var self = this;
+  connection.query("UPDATE users SET name=?,email=?,picture=?, WHERE user_id = ?",[self.name,self.email,self.picture],function(err,result){
+    callback(err,result);
+  });
+}
+
+User.prototype.updateAll=function(callback){
+  var self = this;
+  connection.query("UPDATE users SET name=?,email=?,picture=?,refresh_oken=?,googl_id=?,google_refresh_token=? WHERE user_id = ?",[self.name,self.email,self.picture,self.refreshToken,self.googleId,self.googleRefreshToken],function(err,result){
+    callback(err,result);
+  });
+}
+
+User.prototype.delete=function(callback){
+  var self = this;
+  connection.query("DELETE FROM users WHERE user_id=?",self.data.id,function(err,result){
+    callback(err,result);
+  });
+}
+
+User.dbPairs={
+  id:new Pair("user_id","id"),
+  name:new Pair("name","name"),
+  email:new Pair("email","email"),
+  picture:new Pair("picture","picture"),
+  refreshToken:new Pair("refresh_token","refreshToken"),
+  googleId:new Pair("google_id","googleId"),
+  googleRefreshToken:new Pair("google_refresh_token","googleRefreshToken")
+}
 
 User.convertDataFromDatabase=function(row){
   return{
@@ -66,7 +114,6 @@ User.convertDataFromDatabase=function(row){
   }
 
 }
-
 
 User.getByGoogleId=function(gId,callback){
   connection.query("SELECT 	user_id,name,email,picture,refresh_token from users WHERE google_id=?",gId,function(err,rows){
@@ -102,11 +149,11 @@ User.prototype.generateRefreshToken=function(){
 User.prototype.generateAccessToken=function(){
   var self=this;
   return jwt.sign({
-    id:self.data.id
-  },authConfig.jwtSecret,
-{
-  expiresIn: 60*60
-})
+      id:self.data.id
+    },authConfig.jwtSecret,
+  {
+    expiresIn: 60*60
+  });
 }
 
 User.getByAccessToken=function(token,callback){
@@ -149,5 +196,6 @@ User.prototype.toResponse=function(){
   var response=this.data;
   return response;
 }
+
 
 module.exports= User;

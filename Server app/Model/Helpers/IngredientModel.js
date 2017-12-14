@@ -27,10 +27,10 @@ Ingredient.getById = function (id,callback) {
     data={
       name:rows[0]['name'],
       picture:rows[0]['picture']
-  };
-    callback(null,data);
-  }
-});
+    };
+      callback(null,data);
+    }
+  });
 };
 
 Ingredient.checkIngredients= function(ingredients,callback){
@@ -98,7 +98,16 @@ Ingredient.prototype.save = function(callback){
 
 Ingredient.prototype.update=function(callback){
   var self = this;
-  //TODO
+  connection.query("UPDATE ingredients SET ingredient_name=? WHERE ingredient_id = ?",[self.data.name,self.data.id],function(err,result){
+    callback(err,result);
+  });
+}
+
+User.prototype.delete=function(callback){
+  var self = this;
+  connection.query("DELETE FROM ingredients WHERE ingredient_id=?",self.data.id,function(err,result){
+    callback(err,result);
+  });
 }
 
 Ingredient.prototype.toResponse = function () {

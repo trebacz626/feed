@@ -1,9 +1,7 @@
 var connection= require('./database');
 var async = require('async');
-
 var Ingredient = require("./IngredientModel");
-
-
+var Pair = reuire("./Utils/Pair")
 var Dish = function(data){
   this.data=data;
 }
@@ -119,14 +117,9 @@ Dish.simpleSearch= function(ingredients,callback){//TODO move to search controll
           callback(null,dishes);
         }
       });
-
-
-
-  }
-});
+    }
+  });
 }
-
-
 
 Dish.prototype.checkIfExist = function (callback) {
   var self = this;
@@ -169,9 +162,72 @@ Dish.prototype.save = function(callback){
 
 Dish.prototype.update = function(callback){
   var self = this;
-  //TODO
+  connection.query("",[],function(err,result){
+    callback(err,result);
+  });
 }
 
+Dish.prototype.delete=function(callback){
+  var self = this;
+  connection.query("DELETE FROM dishes WHERE dish_id=?",self.data.id,function(err,result){
+    callback(err,result);
+  });
+}
+
+Dish.prototype.updateValue = function(DBvalueName,userValue,callback){
+  var self = this;
+  connection.query("UPDATE dishes SET "+DBvalueName+"=? WHERE user_id = ?",[userValue,self.data.id],function(err,result){
+    callback(err,result);
+  });
+}
+Dish.prototype.updateBasic=function(callback){//TODO
+  var self = this;
+  connection.query("UPDATE dishes SET name=?,email=?,picture=?, WHERE user_id = ?",[self.name,self.email,self.picture],function(err,result){
+    callback(err,result);
+  });
+}
+
+Dish.prototype.updateAll=function(callback){
+  var self = this;
+  async.waterfall([function(next){
+    connection.query("UPDATE users SET name=?,email=?,picture=?,refresh_oken=?,googl_id=?,google_refresh_token=? WHERE user_id = ?",[self.name,self.email,self.picture,self.refreshToken,self.googleId,self.googleRefreshToken],function(err,result){
+      next(err,result);
+    },function(result,next){
+      async.forEach(self.data.ingredients,function(ingredient,next){
+        self.hasIngredient(ingredient,function(err,result){
+          if(err){
+            next(err);
+          }else{
+            if(result){
+              //TODO dish.updateIngredient
+            }else{
+              //TODO dish.addIngredient
+            }
+          }
+        });
+    });
+  },
+  function(next){
+
+  }],
+    function(err){
+      callback(err);
+    });
+
+}
+
+Dish.prototype.hasIngredient=function(ingredient,callback){
+  connection.query("SELECT * FROM ingredient_to_dish WHERE dish_id =? AND ingredient_id=? ",[self.data.id,ingredient.data.id],function(err,rows){
+    if(err)callback(err)
+    else{
+      if(!rows.length){
+        callback(null,false);
+      }else{
+        callback(null,true);
+      }
+    }
+  });
+}
 Dish.prototype.toResponse = function () {
   var ingredients = [];
   if(this.data.ingredients){

@@ -9,7 +9,5 @@ function md5(string) {
 
 
 require('../Controller/controllers.js')(router);
-console.log("rr");
-
 
 module.exports=router;
