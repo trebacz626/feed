@@ -1,7 +1,7 @@
 var connection= require('./database');
 var async = require('async');
 var Ingredient = require("./IngredientModel");
-var Pair = reuire("./Utils/Pair")
+var Pair = require("../../Utils/Pair")
 var Dish = function(data){
   this.data=data;
 }
@@ -13,9 +13,6 @@ Dish.getById = function (id,callback) {
   async.waterfall([
     function(cb){
       connection.query("SELECT name,recipe,author_id from dishes where dish_id=?",id,function(err,rows){
-        if(err){
-          err="Databse error"
-        }
         cb(err,rows);
       });
     },function(rows,cb){
@@ -187,25 +184,73 @@ Dish.prototype.updateBasic=function(callback){//TODO
   });
 }
 
+function similarElements(array1,array2){
+  var lookupArray=[];
+
+  var similar=[];
+  for(let i=0;i<array1.length;i++){
+    lookupArray[array1[i].data.name]=1;
+  }
+  for(let i=0;i<array2.length;i++){
+    if(lookupArray[array2[i].data.name]){
+      similar.push(array2[i]);
+    }
+  }
+  return similar;
+}
+function differentElements(array1,array2){
+  var lookupArray=[];
+
+  var different=[];
+  for(let i=0;i<array1.length;i++){
+    lookupArray[array1[i].data.name]=1;
+  }
+  for(let i=0;i<array2.length;i++){
+    if(!lookupArray[array2[i].data.name]){
+      different.push(array2[i]);
+    }
+  }
+  return different;
+}
+Dish.test=function(){
+  console.log("test");
+  array1=[
+    new Ingredient({name:"egg"}),
+    new Ingredient({name:"apple"}),
+    new Ingredient({name:"ham"}),
+    new Ingredient({name:"sausage"})
+  ];
+  array2=[
+    new Ingredient({name:"qwerty"}),
+    new Ingredient({name:"egg"}),
+    new Ingredient({name:"apple"}),
+    new Ingredient({name:"ninety"})
+  ];
+  var similar =similarElements(array1,array2);
+  var toAdd=differentElements(similar,array1);
+  var toDelete=differentElements(similar,array2);
+  console.log(toAdd);
+  console.log(toDelete);
+}
+
 Dish.prototype.updateAll=function(callback){
   var self = this;
+  var old;
   async.waterfall([function(next){
-    connection.query("UPDATE users SET name=?,email=?,picture=?,refresh_oken=?,googl_id=?,google_refresh_token=? WHERE user_id = ?",[self.name,self.email,self.picture,self.refreshToken,self.googleId,self.googleRefreshToken],function(err,result){
-      next(err,result);
+      connection.query("UPDATE users SET name=?,email=?,picture=?,refresh_oken=?,googl_id=?,google_refresh_token=? WHERE user_id = ?",[self.name,self.email,self.picture,self.refreshToken,self.googleId,self.googleRefreshToken],function(err,result){
+        next(err,result);
+      })
     },function(result,next){
-      async.forEach(self.data.ingredients,function(ingredient,next){
-        self.hasIngredient(ingredient,function(err,result){
-          if(err){
-            next(err);
-          }else{
-            if(result){
-              //TODO dish.updateIngredient
-            }else{
-              //TODO dish.addIngredient
-            }
-          }
-        });
-    });
+      Dish.getById(self.data.id,next);
+    },function(dish,next){
+      var old=dish;
+      var similar=similarElements(self.data.ingredients,old.data.ingredients);
+      var toAdd=differentElements(similar,array1);
+      var toDelete=differentElements(similar,array2);
+      var query1="DELETE FROM ingredient_to_dish WHERE "
+      for(let i=0;i<toDelete.length;i++){//TODO queryMaker
+        query1+="ingredient_id"
+      }
   },
   function(next){
 

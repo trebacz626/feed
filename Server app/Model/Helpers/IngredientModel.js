@@ -103,7 +103,7 @@ Ingredient.prototype.update=function(callback){
   });
 }
 
-User.prototype.delete=function(callback){
+Ingredient.prototype.delete=function(callback){
   var self = this;
   connection.query("DELETE FROM ingredients WHERE ingredient_id=?",self.data.id,function(err,result){
     callback(err,result);

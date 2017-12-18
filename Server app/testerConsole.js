@@ -7,6 +7,5 @@ var user = new User({
   refreshToken:"12345"
 });
 
-user.updateValues([User.dbPairs.name,User.dbPairs.email,User.dbPairs.refreshToken],function(err,result){
-  console.log(err);
-});
+var Dish = require("./MOdel/Helpers/DishModel");
+Dish.test();
