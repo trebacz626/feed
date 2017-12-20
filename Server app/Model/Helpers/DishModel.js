@@ -20,10 +20,10 @@ Dish.getById = function (id,callback) {
         cb("No dish with this id");
       }else{
         dish =new Dish({
-          dish_id:id,
+          id:id,
           name:rows[0].name,
           recipe:rows[0].recipe,
-          author_id:rows[0].author_id
+          authorId:rows[0].author_id
         });
         dish.getIngredients(cb);
       }
@@ -40,7 +40,7 @@ Dish.getById = function (id,callback) {
 Dish.prototype.getIngredients=function(callback){
   var self=this;
 
-  connection.query("SELECT ingredients.ingredient_name,ingredients.ingredient_id FROM ingredients INNER JOIN ingredient_to_dish ON ingredients.ingredient_id=ingredient_to_dish.ingredient_id WHERE dish_id=?",self.data.dish_id,function(err,rows){
+  connection.query("SELECT ingredients.ingredient_name,ingredients.ingredient_id FROM ingredients INNER JOIN ingredient_to_dish ON ingredients.ingredient_id=ingredient_to_dish.ingredient_id WHERE dish_id=?",self.data.id,function(err,rows){
     if(err){
       callback(err);
     }else{
@@ -53,7 +53,6 @@ Dish.prototype.getIngredients=function(callback){
             name:rows[i].ingredient_name,
             id:rows[i].ingredient_id}));
         }
-        console.log(self.toResponse());
         callback(err);
       }
 
@@ -84,7 +83,7 @@ Dish.simpleSearch= function(ingredients,callback){//TODO move to search controll
         dish.data.name=rows[i].name;
         dish.data.recipe=rows[i].recipe;
         dish.data.ingredients= new Array();
-        dish.data.dish_id=rows[i].dish_id;
+        dish.data.id=rows[i].dish_id;
         dishes.push(dish);
       };
 
@@ -179,9 +178,10 @@ Dish.prototype.updateValue = function(DBvalueName,userValue,callback){
 }
 Dish.prototype.updateBasic=function(callback){//TODO
   var self = this;
-  connection.query("UPDATE dishes SET name=?,email=?,picture=?, WHERE user_id = ?",[self.name,self.email,self.picture],function(err,result){
+  connection.query("UPDATE dishes SET name=?,recipe=?,picture=?,author_id=? WHERE dish_id = ?",[self.data.name,self.data.recipe,self.data.picture,self.data.authorId,self.data.id],function(err,result){
     callback(err,result);
   });
+
 }
 
 function similarElements(array1,array2){
@@ -213,7 +213,6 @@ function differentElements(array1,array2){
   return different;
 }
 Dish.test=function(){
-  console.log("test");
   array1=[
     new Ingredient({name:"egg"}),
     new Ingredient({name:"apple"}),
@@ -249,24 +248,22 @@ Dish.test=function(){
     if(i!=toDelete.length-1)query2+=",";
   }
 
-  console.log(query1);
-  console.log(query2);
 }
 
 Dish.prototype.updateAll=function(callback){
   var self = this;
   var old;
   async.waterfall([function(next){
-      connection.query("UPDATE users SET name=?,email=?,picture=?,refresh_oken=?,googl_id=?,google_refresh_token=? WHERE user_id = ?",[self.name,self.email,self.picture,self.refreshToken,self.googleId,self.googleRefreshToken],function(err,result){
+      self.updateBasic(function(err,result){
         next(err,result);
-      })
+      });
     },function(result,next){
       Dish.getById(self.data.id,next);
     },function(dish,next){
       var old=dish;
       var similar=similarElements(self.data.ingredients,old.data.ingredients);
-      var toAdd=differentElements(similar,array1);
-      var toDelete=differentElements(similar,array2);
+      var toAdd=differentElements(similar,self.data.ingredients);
+      var toDelete=differentElements(similar,old.data.ingredients);
       var query1="DELETE FROM ingredient_to_dish WHERE dish_id=? AND (";
       var params1=[];
       params1.push(self.data.id);
@@ -280,13 +277,31 @@ Dish.prototype.updateAll=function(callback){
       var params2=[];
       for(let i=0;i<toAdd.length;i++){//TODO queryMaker
         query2+="(?,?) ";
-        params2.push(toDelete[i].data.id);
+        params2.push(toAdd[i].data.id);
         params2.push(self.data.id);
-        if(i!=toDelete.length-1)query2+=",";
+        if(i!=toAdd.length-1)query2+=",";
       }
-
-      console.log(query1);
-      console.log(query2);
+      console.log("last error");
+      async.parallel({
+        one:function(parallelCb){
+          if(toDelete.length<1)parallelCb(null)
+          else{
+            connection.query(query1,params1,function(err,result){
+              parallelCb(err);
+          });
+        }
+        },
+        two:function(parallelCb){
+          if(toAdd.length<1)parallelCb(null)
+          else{
+            connection.query(query2,params2,function(err,result){
+              parallelCb(err);
+            });
+          }
+        }
+      },function(err,result){
+        callback(err);
+      });
   },
   function(next){
 
@@ -318,10 +333,11 @@ Dish.prototype.toResponse = function () {
   }
 
   var response = {
-    dish_id: this.data.dish_id,
+    id: this.data.id,
     name: this.data.name,
     recipe: this.data.recipe,
-    ingredients:ingredients
+    ingredients:ingredients,
+    authorId:this.data.authorId
   }
   return response;
 }

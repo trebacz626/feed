@@ -28,15 +28,22 @@ combiner.ingredientToDish=  function(ingredient,dish,callback){
 	});
 }
 connection.combiner= combiner;
+module.exports=database=connection
+
+/*
+
 module.exports=database={
 	query:function(statement,data,callback){
-		connection.query(statement,data,function(err,result){
+		var qry=connection.query(statement,data,function(err,result){
 			if(err){
 				console.log(err);
 				err="Database error";
 			}
 			callback(err,result);
+			return qry;
 		});
 	},
 	combiner:combiner
 };
+
+*/
