@@ -226,11 +226,31 @@ Dish.test=function(){
     new Ingredient({name:"apple"}),
     new Ingredient({name:"ninety"})
   ];
+  var self={data:{id:2}};
+  var old={data:{id:2}};
   var similar =similarElements(array1,array2);
   var toAdd=differentElements(similar,array1);
   var toDelete=differentElements(similar,array2);
-  console.log(toAdd);
-  console.log(toDelete);
+  var query1="DELETE FROM ingredient_to_dish WHERE dish_id=? AND (";
+  var params1=[];
+  params1.push(self.data.id);
+  for(let i=0;i<toDelete.length;i++){//TODO queryMaker
+    query1+="ingredient_id=?";
+    params1.push(toDelete[i].data.id);
+    if(i!=toDelete.length-1)query1+=" OR ";
+  }
+  query1+=")";
+  var query2="INSERT INTO ingredient_to_dish(ingredient_id,dish_id) VALUES";
+  var params2=[];
+  for(let i=0;i<toAdd.length;i++){//TODO queryMaker
+    query2+="(?,?) ";
+    params2.push(toDelete[i].data.id);
+    params2.push(self.data.id);
+    if(i!=toDelete.length-1)query2+=",";
+  }
+
+  console.log(query1);
+  console.log(query2);
 }
 
 Dish.prototype.updateAll=function(callback){
@@ -247,10 +267,26 @@ Dish.prototype.updateAll=function(callback){
       var similar=similarElements(self.data.ingredients,old.data.ingredients);
       var toAdd=differentElements(similar,array1);
       var toDelete=differentElements(similar,array2);
-      var query1="DELETE FROM ingredient_to_dish WHERE "
+      var query1="DELETE FROM ingredient_to_dish WHERE dish_id=? AND (";
+      var params1=[];
+      params1.push(self.data.id);
       for(let i=0;i<toDelete.length;i++){//TODO queryMaker
-        query1+="ingredient_id"
+        query1+="ingredient_id=? ";
+        params1.push(toDelete[i].data.id);
+        if(i!=toDelete.length-1)query1+="OR";
       }
+      query1+=")";
+      var query2="INSERT INTO ingredient_to_dish(ingredient_id,dish_id) VALUES";
+      var params2=[];
+      for(let i=0;i<toAdd.length;i++){//TODO queryMaker
+        query2+="(?,?) ";
+        params2.push(toDelete[i].data.id);
+        params2.push(self.data.id);
+        if(i!=toDelete.length-1)query2+=",";
+      }
+
+      console.log(query1);
+      console.log(query2);
   },
   function(next){
 
