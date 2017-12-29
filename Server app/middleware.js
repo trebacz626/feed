@@ -49,7 +49,7 @@ var checkData = function(table){
   return function(req,res,next){
     var hasAll=true;
     for(let i=0;i<table.length;i++){
-      if(!(req.body[table[1]]||req.body[table[1]]||req.headers[[table[1]]])){
+      if(!(req.query[table[1]]||req.body[table[1]]||req.headers[[table[1]]])){
         hasAll=false
       }
     }

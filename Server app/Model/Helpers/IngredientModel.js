@@ -20,15 +20,18 @@ var Ingredient = function(data){
 Ingredient.prototype.data = {}
 
 Ingredient.getById = function (id,callback) {
-  connection.query("SELECT name,picture from users where user_id=?",id,function(err,rows){
+  connection.query("SELECT ingredient_name where ingredient_id=?",id,function(err,rows){
   if(err){
     callback(err);
   }else{
-    data={
-      name:rows[0]['name'],
-      picture:rows[0]['picture']
-    };
-      callback(null,data);
+    if(rows.length){
+      callback(null,new Ingredient({
+        id:id,
+        name:rows[0]["ingredient_name"]
+      }))
+    }else{
+      callback("No ingredient with this id");
+    }
     }
   });
 };

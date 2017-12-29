@@ -52,6 +52,7 @@ post.task=function(req,res,next){
   );
   }
 post.authenticationLevel=Activity.AuthLevels.User;
+post.neededData=["dishName","recipe","ingredient"];
 post.localMiddlewares.push(function dataSerializer(req,res,next){
   console.log("serialize")
   var data={
@@ -75,6 +76,7 @@ post.localMiddlewares.push(function dataSerializer(req,res,next){
 var get =new Activity();
 get.method=Activity.Methods.Get;
 get.authenticationLevel=Activity.AuthLevels.User;
+get.neededData=["id"];
 get.localMiddlewares.push(function(req,res,next){
   console.log()
   var data={
@@ -110,7 +112,49 @@ get.task=function(req,res,next){
 }
 
 
+var put = new Activity();
+put.method=Activity.Methods.Put;
+put.authenticationLevel=Activity.AuthLevels.User;
+put.neededData=["id","dishName","recipe","ingredient"];
+put.localMiddlewares.push(function(req,res,next){
+  console.log()
+  var data={
+    dish:{
+          id:req.query.id
+        }
+  }
+  res.locals.data=data;
+  next();
+});
+put.task=function(req,res,next){
+  var user=res.locals.user;
+  var newDish=res.locals.data.dish;
+  var oldDish={};
+  async.waterfall([function(next){
+      Dish.getById(newDish.data.id,function(err,dish){
+        oldDish=dish;
+        next(err);
+      });
+    },function(next){
+      if(user.data.id===oldDish.data.author_id){
+        newDish.update(oldDish,next);
+      }else{
+        next("It's not your dish");
+      }
+    }],
+    function(err){
+      if(err)res.json({error:err});
+      else res.json({
+        dish:newDish
+      });
+
+    });
+};
+
+//TODO delete
 
 dishController.activities.push(post);
 dishController.activities.push(get);
+dishController.activities.push(put);
+
 module.exports= dishController;

@@ -12,6 +12,7 @@ var simple = new Activity();
 simple.name="simple";
 simple.method=Activity.Methods.Get;
 simple.authenticationLevel=Activity.AuthLevels.Guest;
+simple.neededData=["ingredient"];
 simple.task=function(req,res,next){
   var user =res.locals.user;
   var ingredients = res.locals.data.ingredients;
