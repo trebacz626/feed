@@ -1,14 +1,14 @@
 {
   "name": "simple-cooking",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node app.js"
   },
   "dependencies": {
     "async": "^2.1.5",
     "body-parser": "~1.16.0",
-    "connect-busboy": "",
+    "connect-busboy": "0.0.2",
     "cookie-parser": "~1.4.3",
     "crypto": "0.0.3",
     "debug": "~2.6.0",
@@ -16,10 +16,10 @@
     "express": "~4.14.1",
     "express-session": "",
     "formidable": "^1.1.1",
-    "googleapis": "",
+    "googleapis": "17.1.0",
     "jsonwebtoken": "^8.0.1",
     "morgan": "~1.7.0",
-    "mysql": "",
+    "mysql": "2.13.0",
     "serve-favicon": "~2.3.2"
   }
 }
