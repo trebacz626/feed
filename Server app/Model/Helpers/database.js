@@ -1,18 +1,24 @@
 var mysql= require('mysql');
-var connection = mysql.createConnection({
-	host     : 'localhost',
-  user     : 'simple-cookingdbadmin',
-  password : 'simple-cookingdbadmin626',
-  database : 'simple-cookingdb'
-
-});
+var async = require('async');
+var dbConfig=require('../../config/db');
+var connection = mysql.createConnection(dbConfig.credentials);
 connection.connect(function(err) {
   if (err) {
     console.error('error connecting: ' + err.stack);
     return;
   }
+	console.log('connected as id ' + connection.threadId);
+	async.each(dbConfig.startupQueries,function(query,callback){
+		connection.query(query,callback);
+	},function(err){
+		if(err){
+			console.log("error initializing database");
+		}else{
+			console.log("database iniitialized succesfully");
+		}
+	});
 
-  console.log('connected as id ' + connection.threadId);
+
 });
 var combiner= new Object();
 combiner.ingredientToDish=  function(ingredient,dish,callback){

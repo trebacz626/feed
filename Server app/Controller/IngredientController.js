@@ -63,9 +63,11 @@ get.localMiddlewares.push(function dataSerializer(req,res,next){
   res.locals.data={id:req.query.id};
   next();
 });
-get.task=function(req,res,next){
+get.task=function(req,res,next){  
+  console.log(res.locals.data);
   Ingredient.getById(res.locals.data.id,function(err,ingredient){
     if(err){
+      console.log(err);
       res.json({error:err});
     }else{
       res.json({
@@ -75,7 +77,7 @@ get.task=function(req,res,next){
   });
 };
 
-var put = new Activity();
+var put = new Activity();//TODO Move to CMS
 put.method=Activity.Methods.Put;
 put.authenticationLevel=Activity.AuthLevels.IngredientModerator;
 put.neededData=["id","name"];
@@ -91,7 +93,7 @@ put.localMiddlewares.push(function dataSerializer(req,res,next){
 });
 put.task=function(req,res,next){
   var ingredient=new Ingredient({id:res.locals.data.ingredient.id,name:res.locals.data.ingredient.name});
-  ingredient.checkIfExist(err,exists){
+  ingredient.checkIfExist(function(err,exists){
     if(exists){
       ingredient.update(function(err,result){
         if(err){
@@ -109,10 +111,8 @@ put.task=function(req,res,next){
         error:"this ingredient doesn't exist"
       })
     }
-  }
+  });
 }
-
-//TODO delete
 
 
 ingredientController.activities.push(post);

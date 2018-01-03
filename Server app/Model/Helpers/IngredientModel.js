@@ -20,7 +20,8 @@ var Ingredient = function(data){
 Ingredient.prototype.data = {}
 
 Ingredient.getById = function (id,callback) {
-  connection.query("SELECT ingredient_name where ingredient_id=?",id,function(err,rows){
+  Number(id);
+  connection.query("SELECT ingredient_name FROM ingredients where ingredient_id=?",id,function(err,rows){
   if(err){
     callback(err);
   }else{
@@ -108,8 +109,56 @@ Ingredient.prototype.update=function(callback){
 
 Ingredient.prototype.delete=function(callback){
   var self = this;
-  connection.query("DELETE FROM ingredients WHERE ingredient_id=?",self.data.id,function(err,result){
-    callback(err,result);
+  async.waterfall([function(next){
+      connection.query("SELECT dish_id FROM ingredient_to_dish WHERE ingredient_id=? ",self.data.id,function(err,result){//TODO getDish by ingredient
+        next(err,result);
+      })
+    },function(result,next){
+      if(!result.length){
+        next();
+      }else{
+          var query1="DELETE FROM ingredient_to_dish WHERE ";
+          var params1 =[];
+          for(var i=0;i<result.length;i++){
+            query1+="dish_id= ?"
+            params1.push(result[i]["dish_id"]);
+            if(i!=result.length-1)query1+=" OR ";
+          }
+
+          var query2="DELETE FROM dishes WHERE ";
+          var params2 =[];
+          for(var i=0;i<result.length;i++){
+            query2+="dish_id= ?"
+            params2.push(result[i]["dish_id"]);
+            if(i!=result.length-1)query2+=" OR ";
+          }
+          async.parallel({
+            one:function(parallelCb){
+              if(params1.length<1)parallelCb(null)
+              else{
+                connection.query(query1,params1,function(err,result){
+                  parallelCb(err);
+              });
+            }
+            },
+            two:function(parallelCb){
+              if(params2.length<1)parallelCb(null)
+              else{
+                connection.query(query2,params2,function(err,result){
+                  parallelCb(err);
+                });
+              }
+            }
+            },function(err,result){
+              next(err);
+            });
+          }
+    },function(next){
+      connection.query("DELETE FROM ingredients WHERE ingredient_id=?",self.data.id,function(err,result){
+        next(err);
+      });
+    }],function(err){
+      callback(err);
   });
 }
 

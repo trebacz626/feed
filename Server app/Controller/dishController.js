@@ -10,7 +10,7 @@ var dishController = new Controller();
 dishController.name="dish";
 
 var post = new Activity();
-post.method=Activity.Methods.Get;
+post.method=Activity.Methods.Post;
 post.task=function(req,res,next){
   console.log(res.locals);
   var user = res.locals.user;
@@ -25,7 +25,6 @@ post.task=function(req,res,next){
   },
   function(message,next){
     if(message) res.json({
-      userInfo:user.toResponse(),
       message:message
     });
     else{
@@ -39,12 +38,10 @@ post.task=function(req,res,next){
   function(err){
     console.log(err);
     if(err) res.json({
-      userInfo:user.toResponse(),
       error:err
     });
     else{
       res.json({
-        userInfo:user.toResponse(),
         dish:dish.toResponse()
       });
     }
@@ -78,7 +75,6 @@ get.method=Activity.Methods.Get;
 get.authenticationLevel=Activity.AuthLevels.User;
 get.neededData=["id"];
 get.localMiddlewares.push(function(req,res,next){
-  console.log()
   var data={
     dish:{
           id:req.query.id
@@ -88,22 +84,17 @@ get.localMiddlewares.push(function(req,res,next){
   next();
 });
 get.task=function(req,res,next){
-  console.log("id");
   var user = res.locals.user;
   async.waterfall([
     function(next){
-      console.log("Get by id")
       Dish.getById(res.locals.data.dish.id,next);
     }],
     function(err,dish){
-      console.log(err);
       if(err) res.json({
-        userInfo:user.toResponse(),
         error:err
       });
       else{
         res.json({
-          userInfo:user.toResponse(),
           dish:dish.toResponse()
         });
       }
@@ -116,28 +107,86 @@ var put = new Activity();
 put.method=Activity.Methods.Put;
 put.authenticationLevel=Activity.AuthLevels.User;
 put.neededData=["id","dishName","recipe","ingredient"];
-put.localMiddlewares.push(function(req,res,next){
-  console.log()
+put.localMiddlewares.push(function dataSerializer(req,res,next){
+  console.log("serialize")
   var data={
     dish:{
-          id:req.query.id
-        }
+          id:req.query.id,
+					name:req.body.dishName,
+					ingredients:new Array(),
+					recipe:req.body.recipe,
+					author_id:null,
+				}
   }
-  res.locals.data=data;
-  next();
+
+  for(let i=0;i<req.body.ingredient.length;i++){
+			var ing = new Ingredient({id:null,name:req.body.ingredient[i]});
+			data.dish.ingredients.push(ing);
+		}
+    res.locals.data=data;
+    next();
 });
 put.task=function(req,res,next){
   var user=res.locals.user;
-  var newDish=res.locals.data.dish;
+  var newDish= new Dish(res.locals.data.dish);
   var oldDish={};
   async.waterfall([function(next){
+    Ingredient.checkIngredients(newDish.data.ingredients,function(err,message){
+
+      if(err)next(err);
+      else next(message);
+    });
+  },function(next){
+    console.log("ingredients checked");
       Dish.getById(newDish.data.id,function(err,dish){
         oldDish=dish;
         next(err);
       });
     },function(next){
-      if(user.data.id===oldDish.data.author_id){
-        newDish.update(oldDish,next);
+      console.log("dish gotten");
+      console.log(user.toResponse());
+      console.log(oldDish.toResponse());
+      if(user.data.id==oldDish.data.authorId){
+        newDish.updateAll(oldDish,next);
+      }else{
+        next("It's not your dish");
+      }
+    }],
+    function(err){
+      if(err){
+        console.log(err);
+        res.json({error:err})
+      }else res.json({
+        dish:newDish.toResponse()
+      });
+
+    });
+};
+
+//TODO delete
+var deleteAct= new Activity();
+deleteAct.method=Activity.Methods.Delete;
+deleteAct.authenticationLevel=Activity.AuthLevels.User;
+deleteAct.neededData=["id"];
+deleteAct.localMiddlewares.push(function(req,res,next){
+  res.locals.data={
+    dish:{
+      id:req.query.id
+    }
+  }
+  next();
+});
+deleteAct.task=function(req,res,next){
+  var user = res.locals.user;
+  var dish =new Dish(res.locals.data.dish);
+  async.waterfall([function(next){
+      Dish.getById(dish.data.id,function(err,dish2){
+        dish=dish2;
+        next(err);
+      });
+    },function(next){
+      if(user.data.id===dish.data.authorId){
+        dish.delete(next);
       }else{
         next("It's not your dish");
       }
@@ -145,16 +194,15 @@ put.task=function(req,res,next){
     function(err){
       if(err)res.json({error:err});
       else res.json({
-        dish:newDish
+        dish:dish.toResponse()
       });
 
     });
-};
-
-//TODO delete
+}
 
 dishController.activities.push(post);
 dishController.activities.push(get);
 dishController.activities.push(put);
+dishController.activities.push(deleteAct);
 
 module.exports= dishController;

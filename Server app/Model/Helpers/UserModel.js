@@ -12,11 +12,14 @@ var User = function(data){
 User.prototype.data = {}
 
 User.getById = function (id,callback) {
-  connection.query("SELECT name,picture from users where user_id=?",id,function(err,rows){
+  connection.query("SELECT * from users where user_id=?",id,function(err,rows){
     if(err){
       callback(err);
     }else{
-      callback(null,new User( User.convertDataFromDatabase(rows[0])));
+      if(!rows.length)
+        callback("No user with this id");
+      else
+        callback(null,new User( User.convertDataFromDatabase(rows[0])));
     }
   });
 };
@@ -73,20 +76,71 @@ User.prototype.updateValues = function(pairs,callback){
 
 User.prototype.updateBasic=function(callback){
   var self = this;
-  connection.query("UPDATE users SET name=?,email=?,picture=?, WHERE user_id = ?",[self.name,self.email,self.picture],function(err,result){
+  connection.query("UPDATE users SET name=?,email=?,picture=? WHERE user_id = ?",[self.data.name,self.data.email,self.data.picture,self.data.id],function(err,result){
     callback(err,result);
   });
 }
 
 User.prototype.updateAll=function(callback){
   var self = this;
-  connection.query("UPDATE users SET name=?,email=?,picture=?,refresh_oken=?,googl_id=?,google_refresh_token=? WHERE user_id = ?",[self.name,self.email,self.picture,self.refreshToken,self.googleId,self.googleRefreshToken],function(err,result){
+  connection.query("UPDATE users SET name=?,email=?,picture=?,refresh_oken=?,googl_id=?,google_refresh_token=? WHERE user_id = ?",[self.data.name,self.data.email,self.data.picture,self.data.refreshToken,self.data.googleId,self.data.googleRefreshToken],function(err,result){
     callback(err,result);
   });
 }
 
 User.prototype.delete=function(callback){
   var self = this;
+  async.waterfall([function(next){
+    connection.query("SELECT dishes.dish_id FROM dishes WHERE author_id=?",self.data.id,function(err,result){
+      next(err,result);
+    });
+  },function(result,next){
+    if(!result.length){
+      next();
+    }else{
+        var query1="DELETE FROM ingredient_to_dish WHERE ";
+        var params1 =[];
+        for(var i=0;i<result.length;i++){
+          query1+="dish_id= ?"
+          params1.push(result[i]["dish_id"]);
+          if(i!=result.length-1)query1+=" OR ";
+        }
+
+        var query2="DELETE FROM dishes WHERE ";
+        var params2 =[];
+        for(var i=0;i<result.length;i++){
+          query2+="dish_id= ?"
+          params2.push(result[i]["dish_id"]);
+          if(i!=result.length-1)query2+=" OR ";
+        }
+        async.parallel({
+          one:function(parallelCb){
+            if(params1.length<1)parallelCb(null)
+            else{
+              connection.query(query1,params1,function(err,result){
+                parallelCb(err);
+            });
+          }
+          },
+          two:function(parallelCb){
+            if(params2.length<1)parallelCb(null)
+            else{
+              connection.query(query2,params2,function(err,result){
+                parallelCb(err);
+              });
+            }
+          }
+          },function(err,result){
+            next(err);
+          });
+        }
+  },function(next){
+    connection.query("DELETE FROM users WHERE user_id= ?",self.data.id,function(err,result){
+      next(err);
+    });
+  }],function(err){
+    callback(err);
+  })
   connection.query("DELETE FROM users WHERE user_id=?",self.data.id,function(err,result){
     callback(err,result);
   });
@@ -192,7 +246,16 @@ User.getByRefreshToken=function(token,callback){
 }
 
 
-User.prototype.toResponse=function(){
+User.prototype.toResponse=function(isPublic){
+  if(isPublic){
+  return{
+    id:this.data.id,
+    name:this.data.name,
+    email:this.data.email,
+    picture:this.data.picture
+
+  }
+  }
   var response=this.data;
   return response;
 }

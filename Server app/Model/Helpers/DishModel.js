@@ -165,8 +165,17 @@ Dish.prototype.update = function(callback){
 
 Dish.prototype.delete=function(callback){
   var self = this;
-  connection.query("DELETE FROM dishes WHERE dish_id=?",self.data.id,function(err,result){
-    callback(err,result);
+  async.waterfall([function(next){
+    connection.query("DELETE FROM dishes WHERE dish_id=?",self.data.id,function(err,result){
+      next(err);
+    })
+  },function(next){
+    connection.query("DELETE FROM ingredient_to_dish WHERE dish_id=?",self.data.id,function(err,result){
+      console.log(result);
+      next(err);
+    });
+  }],function(err){
+    callback(err);
   });
 }
 
@@ -220,10 +229,11 @@ Dish.prototype.updateAll=function(old,callback){
       });
     },function(result,next){
       if(old.data)next();
-      else
-      Dish.getById(self.data.id,next);
-    },function(dish,next){
-      var old=dish;
+      else Dish.getById(self.data.id,function(dish,err){
+        old=dish;
+        next(err);
+      });
+    },function(next){
 
       var similar=similarElements(self.data.ingredients,old.data.ingredients);
       var toAdd=differentElements(similar,self.data.ingredients);
@@ -264,7 +274,7 @@ Dish.prototype.updateAll=function(old,callback){
           }
         }
       },function(err,result){
-        callback(err);
+        next(err);
       });
     }],
     function(err){

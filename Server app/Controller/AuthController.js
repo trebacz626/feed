@@ -74,6 +74,7 @@ google.localMiddlewares.push(function serialize(req,res,next){
 var refreshAccessToken = new Activity();
 refreshAccessToken.name='refreshaccesstoken';
 refreshAccessToken.method=Activity.Methods.Get;
+refreshAccessToken.neededData=["refresh_token"];
 refreshAccessToken.authenticationLevel=Activity.AuthLevels.Guest;
 refreshAccessToken.task =function(req,res,next){
   var user;

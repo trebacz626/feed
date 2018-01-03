@@ -14,17 +14,14 @@ var roles={
 var authenticate = function(role){
 
   return function(req,res,next){
-    console.log("auth");
     var access_token = req.body.access_token || req.body.access_token || req.headers['access_token'];
     if(access_token){
       async.waterfall([
         function(callback){
-          console.log("getting by access token")
           User.getByAccessToken(access_token,callback);
         }
 
       ],function(err,user){
-        console.log(user);
         if(err) res.status(401).json({
           error:err
         });
@@ -49,7 +46,7 @@ var checkData = function(table){
   return function(req,res,next){
     var hasAll=true;
     for(let i=0;i<table.length;i++){
-      if(!(req.query[table[1]]||req.body[table[1]]||req.headers[[table[1]]])){
+      if(!(req.query[table[i]]||req.body[table[i]]||req.headers[[table[i]]])){
         hasAll=false
       }
     }

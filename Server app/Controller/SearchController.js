@@ -23,7 +23,6 @@ simple.task=function(req,res,next){
     },
     function(message,next){
       if(message) res.json({
-        userInfo:user.data,
         message:message
       });
       else{
@@ -33,7 +32,6 @@ simple.task=function(req,res,next){
     }],
     function(err,dishes){
       if(err) res.json({
-        userInfo:user.data,
         error:err
       });
       else{
@@ -43,7 +41,6 @@ simple.task=function(req,res,next){
         }
         console.log(user.data);
         res.json({
-          userInfo:user.data,
           dishes:toResponsedishes
         });
       }
